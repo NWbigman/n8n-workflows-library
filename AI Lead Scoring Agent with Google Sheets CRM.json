@@ -1,0 +1,405 @@
+{
+  "name": "AI Lead Scoring Agent with Google Sheets CRM",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        4064,
+        432
+      ],
+      "id": "62cd9a7c-a311-42dc-97ad-1f401327825f",
+      "name": "Manual Lead Sync"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "18ld07W68mWLgXDrEh9LBwfxEyFRkkaa721N3HkN2dug",
+          "mode": "list",
+          "cachedResultName": "Demo Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18ld07W68mWLgXDrEh9LBwfxEyFRkkaa721N3HkN2dug/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18ld07W68mWLgXDrEh9LBwfxEyFRkkaa721N3HkN2dug/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "386374b6-3133-4d7e-9485-4865ae43da45",
+      "name": "Fetch Raw Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4288,
+        432
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Selecciona tu hoja aquí"
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $input.all();\n\nconst leadsText = leads.map((item, index) => {\n  const lead = item.json;\n  return `Lead ${index + 1}:\n- ID: ${lead.ID}\n- Nombre: ${lead.Nombre}\n- Empresa: ${lead.Empresa}\n- Tamaño Empresa: ${lead['Tamaño Empresa']}\n- Presupuesto Declarado: ${lead['Presupuesto Declarado']}\n- Mensaje del Lead: ${lead['Mensaje del Lead']}`;\n}).join('\\n\\n');\n\nreturn {\n  json: {\n    chatInput: leadsText,\n    totalLeads: leads.length,\n    originalData: leads.map(item => item.json)\n  }\n};"
+      },
+      "id": "9e271756-fb0f-4323-8246-201561d1e45f",
+      "name": "Map Leads for AI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4512,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres un asistente experto en clasificación de leads de ventas.\n\nTu tarea es analizar cada lead proporcionado y clasificarlo según los siguientes criterios:\n\n**Hot (Caliente):**\n- Presupuestos altos\n- Urgencia en la solicitud\n- Tomadores de decisiones involucrados\n- Necesidad clara e inmediata\n\n**Warm (Tibio):**\n- En fase de investigación\n- Presupuestos medios\n- Interés genuino pero sin urgencia\n- Potencial de conversión a medio plazo\n\n**Cold (Frío):**\n- Estudiantes\n- Spam o solicitudes irrelevantes\n- Buscadores de empleo\n- Presupuestos muy bajos o inexistentes\n- Sin intención real de compra\n\nAnaliza TODOS los leads proporcionados y devuelve la clasificación y razón para cada uno. Sé específico en tus razones, mencionando los factores clave que determinaron la clasificación."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        4736,
+        432
+      ],
+      "id": "46950fb8-537b-4016-a923-5983888768cb",
+      "name": "Lead Scoring Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4744,
+        656
+      ],
+      "id": "ab73c1ae-fced-47a2-8af9-52ce585c0093",
+      "name": "LLM: GPT-4o",
+      "credentials": {
+        "openAiApi": {
+          "id": "OkI4T50xvEeb0b2r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"clasificaciones\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"ID\": {\n            \"type\": \"number\",\n            \"description\": \"ID del lead\"\n          },\n          \"clasificacion\": {\n            \"type\": \"string\",\n            \"enum\": [\"Hot\", \"Warm\", \"Cold\"],\n            \"description\": \"Clasificación del lead: Hot (presupuestos altos, urgencia, tomadores de decisiones), Warm (fase de investigación, presupuestos medios), Cold (estudiantes, spam, buscadores de empleo, presupuestos bajos)\"\n          },\n          \"razon\": {\n            \"type\": \"string\",\n            \"description\": \"Razón detallada de la clasificación\"\n          }\n        },\n        \"required\": [\"ID\", \"clasificacion\", \"razon\"]\n      }\n    }\n  },\n  \"required\": [\"clasificaciones\"]\n}"
+      },
+      "id": "f489b545-1b05-447e-b0a4-afd8c14ddd5d",
+      "name": "Lead Categories",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        4872,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json;\nconst clasificaciones = aiOutput.output?.clasificaciones || aiOutput.clasificaciones || [];\n\nreturn clasificaciones.map(item => ({\n  json: {\n    ID: item.ID,\n    clasificacion: item.clasificacion,\n    razon: item.razon\n  }\n}));"
+      },
+      "id": "52c11e10-ee90-44de-8cbc-0b130edd81fb",
+      "name": "Clean AI Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5088,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "18ld07W68mWLgXDrEh9LBwfxEyFRkkaa721N3HkN2dug",
+          "mode": "list",
+          "cachedResultName": "Demo Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18ld07W68mWLgXDrEh9LBwfxEyFRkkaa721N3HkN2dug/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Hoja 1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "[OUTPUT] Clasificación": "={{ $json.clasificacion }}",
+            "[OUTPUT] Razón": "={{ $json.razon }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Empresa",
+              "displayName": "Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tamaño Empresa",
+              "displayName": "Tamaño Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Presupuesto Declarado",
+              "displayName": "Presupuesto Declarado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mensaje del Lead",
+              "displayName": "Mensaje del Lead",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "[OUTPUT] Clasificación",
+              "displayName": "[OUTPUT] Clasificación",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "[OUTPUT] Razón",
+              "displayName": "[OUTPUT] Razón",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "fa9d678c-e723-4c12-ade4-7d19ff611ab4",
+      "name": "Update Lead Score",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        5312,
+        432
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Data Retrieval\nPulls raw customer data from the main CRM spreadsheet.",
+        "height": 496,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4000,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "4e16ee12-5d66-4446-8bde-66eaea0fe08d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI Intelligence\nUses GPT-4o to analyze message intent and budget to classify leads as Hot, Warm, or Cold.",
+        "height": 496,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4688,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "6ee95a24-2aec-4366-ad3e-333a716074ba",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## CRM Sync\nWrites the final classification and the AI's reasoning back to the source document.",
+        "height": 496,
+        "width": 464
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5040,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "e85b55c5-99cc-4273-9716-4930bc8b5208",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Lead Sync": {
+      "main": [
+        [
+          {
+            "node": "Fetch Raw Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Raw Leads": {
+      "main": [
+        [
+          {
+            "node": "Map Leads for AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Leads for AI": {
+      "main": [
+        [
+          {
+            "node": "Lead Scoring Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Scoring Agent": {
+      "main": [
+        [
+          {
+            "node": "Clean AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: GPT-4o": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Lead Scoring Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Categories": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Lead Scoring Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean AI Output": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aba94fa7-dc5d-407a-8caa-91b0b4dfc043",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71397bf1728f5b19b1f2c940dbca72f1ff893445941643dc73d7b8410b8afd63"
+  },
+  "id": "ZdGnRaEH81mGBcjq",
+  "tags": []
+}

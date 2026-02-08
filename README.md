@@ -32,6 +32,11 @@ An AI-powered assistant that acts as a 24/7 sales agent for property inquiries.
 * **Features**: Queries the property database, sends photos of flats, and captures customer data into a CRM.
 * **Tools**: WhatsApp Business API, n8n, Google Sheets.
 
+### **5. MotoGenius E-commerce Sales Assistant**
+* **Purpose**: A specialized retail bot for motorcycle gear.
+* **Capabilities**: Real-time product lookups, automated price-drop alerts, and multimedia (image) delivery.
+* **Tools**: n8n LangChain, GPT-4o Mini, Google Sheets.
+
 ## 🛠️ How to Use
 1.  **Download**: Choose the `.json` file for the workflow you want to use.
 2.  **Import**: In your n8n instance, click "Import from File" and select the JSON.

@@ -1,0 +1,873 @@
+{
+  "name": "Telegram Sports Store Chatbot with AI Image Recognition and Content Moderation",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "storeName",
+              "value": "Tienda Deportiva Pro",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "storeEmail",
+              "value": "cadasaku@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "moderationWarningMessage",
+              "value": "Lo siento, no puedo procesar contenido inapropiado o para adultos. Por favor, envía un mensaje apropiado.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "a24bf0d4-8600-43b1-875a-53343b1abf7d",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3120,
+        164
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "edited_message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "1c0b4379-66a2-4b06-9129-6d636691b0a0",
+      "name": "When Message Received",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -5136,
+        260
+      ],
+      "webhookId": "9bdead03-4e6c-4205-84e5-cb50bc0ece39",
+      "credentials": {
+        "telegramApi": {
+          "id": "MtLBOpVyu0hoFZwx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "message_queue",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.message.from.username }}"
+            },
+            {
+              "fieldId": "message",
+              "fieldValue": "={{ $json.message.text }} || {{ $json.message.caption }}"
+            },
+            {
+              "fieldId": "message_id",
+              "fieldValue": "={{ $json.message.message_id }}"
+            },
+            {
+              "fieldId": "timestamp",
+              "fieldValue": "={{ $json.message.date }}"
+            }
+          ]
+        }
+      },
+      "id": "49317b7f-58e2-4f16-9f87-b2401ca8a792",
+      "name": "Store Message in Queue",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        -4912,
+        260
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "RGXR4TCnxW4gnVaz",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Guarda el mensaje en Supabase (tabla message_queue) con user_id, message, message_id y timestamp."
+    },
+    {
+      "parameters": {},
+      "id": "e58d472d-e063-4509-929a-48080b97606d",
+      "name": "Wait 5 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -4688,
+        260
+      ],
+      "webhookId": "b5834755-6a26-4e04-872c-5711844c2744",
+      "typeVersion": 1.1,
+      "notesInFlow": true,
+      "notes": "Buffer: espera breve para captar mensajes consecutivos del mismo usuario y poder agruparlos."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "message_queue",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "dfa2b534-f5a7-4340-8764-22b44d7e8d4a",
+      "name": "Get Queued Messages",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        -4464,
+        260
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "RGXR4TCnxW4gnVaz",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Lee de Supabase todos los mensajes pendientes del usuario actual."
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "timestamp",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "62913584-6590-4f34-bfcb-4c500ee56170",
+      "name": "Sort by Timestamp",
+      "type": "n8n-nodes-base.sort",
+      "position": [
+        -4240,
+        260
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "Ordena los mensajes por timestamp descendente para identificar el más reciente primero."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mantener solo el primer item de todos los que llegan\nreturn [items[0]];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4016,
+        260
+      ],
+      "id": "c3663709-6c6f-4a01-be2c-6acb80af4b0c",
+      "name": "Keep Only Latest",
+      "notesInFlow": true,
+      "notes": "Deja solo el primer ítem (el más reciente) de la lista de mensajes tras ordenar."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "8852bab7-230e-442a-a4a2-994e979c8f9f",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.message_id }}",
+              "rightValue": "={{ $('When Message Received').item.json.message.message_id }}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "b43ab110-df27-427d-aa1d-df5c349d759d",
+      "name": "Is This the Latest Message?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -3792,
+        260
+      ],
+      "typeVersion": 2.2,
+      "notesInFlow": true,
+      "notes": "Comprueba que el message_id coincide con el último recibido por el disparador. Si no, corta el flujo."
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "message_queue",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "ef0e617f-be9c-4766-aabb-d971e1c94d00",
+      "name": "Clear User Queue",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        -3568,
+        164
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "RGXR4TCnxW4gnVaz",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Borra de Supabase los mensajes en cola de ese usuario (ya procesados)."
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "message"
+            },
+            {
+              "fieldToAggregate": "user_id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5d925a96-f092-45e7-90e2-11feca97efdd",
+      "name": "Combine Messages",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        -3344,
+        164
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "Agrupa el campo 'message' en una colección (array) para entregar todo el contexto al Agente IA."
+    },
+    {
+      "parameters": {},
+      "id": "40524e16-1d36-4675-95ff-69896e54a837",
+      "name": "Do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -3568,
+        356
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "Rama nula si el mensaje no es el más reciente; no ejecuta acciones."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('When Message Received').item.json.message.photo }}",
+              "operator": {
+                "type": "array",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "578f50da-6753-48e7-9fcf-662ac2588f97",
+      "name": "Has Image?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2896,
+        164
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('When Message Received').first().json.message.photo[$('When Message Received').first().json.message.photo.length - 1].file_id }}",
+        "additionalFields": {}
+      },
+      "id": "36356b94-02c5-42fe-9dc0-2ddcfee7ff30",
+      "name": "Download Image",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2624,
+        96
+      ],
+      "webhookId": "61106d8f-4a35-4ac7-8191-5a2486e22862",
+      "credentials": {
+        "telegramApi": {
+          "id": "MtLBOpVyu0hoFZwx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "Describe this image in detail. What products or items do you see?",
+        "inputType": "base64",
+        "options": {}
+      },
+      "id": "d25f2225-dde7-4fac-a017-a4328d2f1fca",
+      "name": "Analyze Image with AI Vision",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -2448,
+        92
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OkI4T50xvEeb0b2r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "classify",
+        "input": "={{ $json.message[0] || \"\" }} {{ $('Analyze Image with AI Vision').isExecuted ? \" || \" + $('Analyze Image with AI Vision').first().json['0'].content[0].text : \"\" }}"
+      },
+      "id": "589b5cfd-0c0b-4812-841a-533fb37c9fb3",
+      "name": "Content Moderation Check",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -2224,
+        164
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OkI4T50xvEeb0b2r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.flagged }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0a1cc04d-20ad-46d3-a847-aebf294c0289",
+      "name": "Is Content Inappropriate?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2000,
+        164
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('When Message Received').item.json.message.from.id }}",
+        "text": "={{ $('Workflow Configuration').first().json.moderationWarningMessage }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c3f3ba96-b36f-47c9-9d8c-d1f6c7779750",
+      "name": "Send Warning Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1680,
+        64
+      ],
+      "webhookId": "11fd82e6-8187-4783-9bca-07b93af3b9d2",
+      "credentials": {
+        "telegramApi": {
+          "id": "MtLBOpVyu0hoFZwx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Combine Messages').first().json.message.join(' ') }} {{ $('Analyze Image with AI Vision').isExecuted ? \" || \" + $('Analyze Image with AI Vision').first().json['0'].content[0].text : \"\" }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Eres un asistente virtual para {{ $('Workflow Configuration').first().json.storeName }}, una tienda en línea de productos deportivos.\n\nTus funciones principales son:\n1. Responder preguntas sobre productos deportivos (ropa, calzado, equipamiento). Puedes inventarte productos tipicos y precios tipicos como lo tendría una tienda de productos deportivos en España.\n2. Ayudar con consultas sobre pedidos, envíos y devoluciones. Puedes inventar datos.\n3. Proporcionar recomendaciones de productos según las necesidades del cliente. Puedes inventar productos tipicos, pero perfila al clientes para darle la mejor opción.\n4. Procesar solicitudes de soporte enviando correos electrónicos cuando sea necesario. Pregunta al usuario cual es su correo electronico antes de enviarlo.\n5. Analizar imágenes de productos que los clientes envíen.\n\nCuando te pregunten qué puedes hacer, explica claramente estas funciones.\n\nSi un cliente necesita soporte adicional o quiere hacer un pedido, usa la herramienta de Gmail para enviar un correo a soporte. Pregunta al usuario cual es su correo. \n\nSé amable, profesional y enfocado en deportes. Mantén el contexto de la conversación para respuestas coherentes.\n\nAhora es {{ $now }}"
+        }
+      },
+      "id": "e7e08621-1e28-40ee-885c-e756952d9e5f",
+      "name": "Sports Store AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1312,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "1d95743b-42d9-4f1b-8e5d-adbdfe1f29fe",
+      "name": "GPT-4.1 Mini Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1392,
+        400
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OkI4T50xvEeb0b2r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Combine Messages').first().json.user_id[0] }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1264,
+        400
+      ],
+      "id": "131254a7-e6ec-4a37-9f5f-62aa75213ce7",
+      "name": "Conversation Memory",
+      "credentials": {
+        "postgres": {
+          "id": "cvjjrdHCCKUMPcLp",
+          "name": "Demo WhatsApp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utiliza esta tool mara enviar correos electronicos cuando  el usuario te lo solicite",
+        "sendTo": "={{ $fromAI('recipientEmail') }}",
+        "subject": "={{ $fromAI('emailSubject') }}",
+        "message": "={{ $fromAI('emailBody') }}",
+        "options": {}
+      },
+      "id": "b39cd438-387a-4fea-9f5a-c2db3b65ae0e",
+      "name": "Send Email Tool",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -1136,
+        400
+      ],
+      "webhookId": "49d5d141-b291-4a11-b927-30dfef48ebec",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Vsev22X5i9TROwor",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('When Message Received').first().json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "a2355e06-7cfb-4121-8133-b03e6111287c",
+      "name": "Send AI Response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -976,
+        176
+      ],
+      "webhookId": "8f9a8016-4c59-476f-b3f2-7f98d268a466",
+      "credentials": {
+        "telegramApi": {
+          "id": "MtLBOpVyu0hoFZwx",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Message Queue System\n\nBatches messages sent within 5 seconds to respond once with full context",
+        "height": 544,
+        "width": 2048
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5240,
+        20
+      ],
+      "typeVersion": 1,
+      "id": "f2e0ca35-e1a2-4c3c-8b5c-cdae6c9a936e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Image Analysis\n\nDetects and analyzes images using AI vision when user sends photos",
+        "height": 544,
+        "width": 864
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3152,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "608cc6dd-6ccd-4655-b8bd-c64e21548f53",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Content Safety Filter\n\nChecks for inappropriate content and sends warnings if needed",
+        "height": 544,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2256,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "24ec5ffe-52c2-45f1-8b12-658c899af0dd",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## AI Assistant\n\nMain AI agent with memory, email capability, and response delivery",
+        "height": 544,
+        "width": 672
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1456,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "ba3375c3-dd15-464c-aebb-54b282c4eb3c",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Has Image?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Message Received": {
+      "main": [
+        [
+          {
+            "node": "Store Message in Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Message in Queue": {
+      "main": [
+        [
+          {
+            "node": "Wait 5 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Queued Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Queued Messages": {
+      "main": [
+        [
+          {
+            "node": "Sort by Timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort by Timestamp": {
+      "main": [
+        [
+          {
+            "node": "Keep Only Latest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Only Latest": {
+      "main": [
+        [
+          {
+            "node": "Is This the Latest Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is This the Latest Message?": {
+      "main": [
+        [
+          {
+            "node": "Clear User Queue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear User Queue": {
+      "main": [
+        [
+          {
+            "node": "Combine Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Messages": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Image?": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Content Moderation Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Analyze Image with AI Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Image with AI Vision": {
+      "main": [
+        [
+          {
+            "node": "Content Moderation Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Moderation Check": {
+      "main": [
+        [
+          {
+            "node": "Is Content Inappropriate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Content Inappropriate?": {
+      "main": [
+        [
+          {
+            "node": "Send Warning Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sports Store AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sports Store AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4.1 Mini Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sports Store AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sports Store AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sports Store AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "836d45a4-f65c-45a6-b0fb-1f61b01ffbe9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71397bf1728f5b19b1f2c940dbca72f1ff893445941643dc73d7b8410b8afd63"
+  },
+  "id": "xvGrzQGk9HWx4XYx",
+  "tags": []
+}

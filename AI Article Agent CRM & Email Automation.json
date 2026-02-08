@@ -1,0 +1,600 @@
+{
+  "name": "Ejercicio Entregable 2",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Centro de Innovación: Lead Magnets Personalizados",
+        "formDescription": "Indica tu correo y el tema que te apasiona. Nuestra IA investigará tendencias actuales y te enviará un artículo técnico exclusivo en menos de 2 minutos.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Email",
+              "fieldLabel": "Indica aqui tu email",
+              "fieldType": "email",
+              "placeholder": "ejemplo@ejemplo.com",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Intereses",
+              "fieldLabel": "¿Sobre qué tema quieres profundizar",
+              "placeholder": "Quiero descubrir sobre como la IA revolucionará el mundo",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c87e55ce-4250-458b-899d-671f318704a5",
+      "name": "Form: Capture Lead Info",
+      "webhookId": "f0d9186e-f28f-4e5d-8f1d-3aeb647c589d"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Cqcxs4-g-bFG2MlF4NayjGOLae9Pt7F64x-xD_vLM7Y",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "LeadMagnet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Cqcxs4-g-bFG2MlF4NayjGOLae9Pt7F64x-xD_vLM7Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ DateTime.fromISO($json.submittedAt).toFormat('yyyy-MM-dd HH:mm:ss') }}",
+            "Email": "={{ $json.Email }}",
+            "Intereses": "={{ $json.Intereses }}",
+            "Status": "Pendiente"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Intereses",
+              "displayName": "Intereses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Link Documento",
+              "displayName": "Link Documento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b0c6418d-3695-4398-ac38-efe8b0969a73",
+      "name": "CRM: Add Lead to Google Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Intereses }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Eres un analista de mercado senior.\nTu tarea es recibir un tema de interés, utilizar la herramienta de Google Search para encontrar las 3 noticias o tendencias más recientes a mes de {{ DateTime.fromISO($json.submittedAt || $now.toString()).setLocale('es').toFormat('MMMM yyyy') }} y redactar un artículo técnico de 500 palabras. \nEstructura: Título impactante, Introducción, 3 puntos clave de tendencia y Conclusión."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "ff014b7c-79ac-4941-8d86-31fdc3ee5d7f",
+      "name": "AI: Research & Write Article"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        224
+      ],
+      "id": "7576f7c6-492f-4c4a-8de8-9e4e2d322371",
+      "name": "LLM: OpenAI GPT-4.1 Mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "OkI4T50xvEeb0b2r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"titulo\": {\n      \"type\": \"string\",\n      \"description\": \"Un título SEO-optimizado e impactante para el artículo.\"\n    },\n    \"cuerpo_articulo\": {\n      \"type\": \"string\",\n      \"description\": \"El contenido completo del artículo en formato texto, incluyendo introducción, puntos clave y conclusión.\"\n    }\n  },\n  \"required\": [\n    \"titulo\",\n    \"cuerpo_articulo\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        592,
+        224
+      ],
+      "id": "efaee6ff-814b-479b-947b-bc717bb6d49c",
+      "name": "Parser: Structure Article Output"
+    },
+    {
+      "parameters": {
+        "folderId": "default",
+        "title": "={{ $json.output.titulo }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "1885a6d2-9440-44a7-b453-6ff33f9fd3d2",
+      "name": "Google Docs: Create New Document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "ErPl2na9MI0cUPGk",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('AI: Research & Write Article').item.json.output.cuerpo_articulo }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "e8f502a7-399b-4f95-b745-d88e09bd0473",
+      "name": "Google Docs: Insert Article Content",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "ErPl2na9MI0cUPGk",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "2189d284-a9a1-450e-9833-01c1509d24e1",
+      "name": "Google Drive: Share Document Publicly",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p7qAdZUseVSSreTE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('CRM: Add Lead to Google Sheet').item.json.Email }}",
+        "subject": "=¡Tu artículo sobre {{ $('CRM: Add Lead to Google Sheet').item.json.Intereses }} ya está listo!",
+        "message": "=<p>Hola,</p>\n<p>Gracias por tu interés. Hemos generado el artículo personalizado que solicitaste:</p>\n<p><strong>{{ $('Google Docs: Create New Document').item.json.name }}</strong></p>\n<br>\n<a href=\"https://docs.google.com/document/d/{{ $('Google Docs: Insert Article Content').item.json.documentId }}/edit\" \n   style=\"background-color: #4CAF50; color: white; padding: 14px 25px; text-align: center; text-decoration: none; display: inline-block; border-radius: 5px;\">\n   Leer artículo ahora\n</a>\n<br>\n<p>Espero que te sea de gran utilidad.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        0
+      ],
+      "id": "26baa79c-3666-4e2b-a971-897b7e264e7e",
+      "name": "Email: Send Article to Customer",
+      "webhookId": "98a7c4e3-4b63-4a5b-bf24-77884d45985e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Vsev22X5i9TROwor",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Cqcxs4-g-bFG2MlF4NayjGOLae9Pt7F64x-xD_vLM7Y",
+          "mode": "list",
+          "cachedResultName": "Leads_LeadMagnet_Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Cqcxs4-g-bFG2MlF4NayjGOLae9Pt7F64x-xD_vLM7Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "LeadMagnet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Cqcxs4-g-bFG2MlF4NayjGOLae9Pt7F64x-xD_vLM7Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "Link Documento": "=https://docs.google.com/document/d/{{ $('Google Docs: Insert Article Content').item.json.documentId }}/edit",
+            "Status": "Enviado",
+            "Email": "={{ $('CRM: Add Lead to Google Sheet').item.json.Email }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Intereses",
+              "displayName": "Intereses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Link Documento",
+              "displayName": "Link Documento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        0
+      ],
+      "id": "ce515164-c003-4d4c-9f34-5b55e0833561",
+      "name": "CRM: Mark as Sent & Add Doc Link",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ACXG6K3B7",
+          "mode": "list",
+          "cachedResultName": "test-ejericio-2"
+        },
+        "text": "=🚀 ¡Nuevo Lead Capturado! \n📧 Email: {{ $node[\"Form: Capture Lead Info\"].json.Email }} \n💡 Intereses: {{ $node[\"Form: Capture Lead Info\"].json.Intereses }} \n📄 Artículo: https://docs.google.com/document/d/{{ $node[\"Google Docs: Insert Article Content\"].json.documentId }}/edit \n✅ El lead ya ha recibido su copia por correo.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1920,
+        0
+      ],
+      "id": "e6423111-b2d7-4f0a-a022-fe1c1f7fb582",
+      "name": "Slack: Notify Team of New Lead",
+      "webhookId": "78cda690-31ee-4dc3-b626-f9cc236b4929",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "wzmavHcChwBUID41",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Lead Capture & Storage",
+        "height": 320,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "2bfb7882-928b-4e5b-9b02-86521b17e8d7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Content Creation",
+        "height": 480,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "4003f062-a3b3-44c8-8ca5-489d71cdfbbe",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Distribution & Tracking",
+        "height": 320,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1200,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "76b9c05c-344e-459a-94ac-2b0835931725",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form: Capture Lead Info": {
+      "main": [
+        [
+          {
+            "node": "CRM: Add Lead to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM: Add Lead to Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "AI: Research & Write Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Research & Write Article": {
+      "main": [
+        [
+          {
+            "node": "Google Docs: Create New Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: OpenAI GPT-4.1 Mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI: Research & Write Article",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser: Structure Article Output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI: Research & Write Article",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs: Create New Document": {
+      "main": [
+        [
+          {
+            "node": "Google Docs: Insert Article Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs: Insert Article Content": {
+      "main": [
+        [
+          {
+            "node": "Google Drive: Share Document Publicly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive: Share Document Publicly": {
+      "main": [
+        [
+          {
+            "node": "Email: Send Article to Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email: Send Article to Customer": {
+      "main": [
+        [
+          {
+            "node": "CRM: Mark as Sent & Add Doc Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM: Mark as Sent & Add Doc Link": {
+      "main": [
+        [
+          {
+            "node": "Slack: Notify Team of New Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "5cbe2c4f-acfb-4c1a-a46b-7919686dcd46",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71397bf1728f5b19b1f2c940dbca72f1ff893445941643dc73d7b8410b8afd63"
+  },
+  "id": "azMvIKPTemIrFBPu",
+  "tags": []
+}

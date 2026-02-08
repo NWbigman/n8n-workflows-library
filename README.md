@@ -42,6 +42,11 @@ An AI-powered assistant that acts as a 24/7 sales agent for property inquiries.
 * **Action**: Categorizes leads by urgency and budget (Hot/Warm/Cold) and explains why.
 * **Tools**: GPT-4o, n8n Code Node, Google Sheets.
 
+### **7. Typeform to ClickUp CRM Sync**
+* **Purpose**: Eliminates manual task entry and prevents duplicate records in ClickUp.
+* **Logic**: Routes form entries by category and uses conditional branches to decide between an Update or Create action.
+* **Tools**: n8n, Typeform, ClickUp.
+
 ## 🛠️ How to Use
 1.  **Download**: Choose the `.json` file for the workflow you want to use.
 2.  **Import**: In your n8n instance, click "Import from File" and select the JSON.

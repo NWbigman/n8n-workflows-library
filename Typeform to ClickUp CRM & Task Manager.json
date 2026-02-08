@@ -1,0 +1,895 @@
+{
+  "name": "Typeform to ClickUp CRM & Task Manager",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"SEO\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        0
+      ],
+      "id": "787b2839-1c3c-454d-93f6-e5acbe44c554",
+      "name": "Add title SEO"
+    },
+    {
+      "parameters": {
+        "formId": "Zb2lrTyQ"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "d8882320-93b4-4851-98b3-9e9a3f0abb37",
+      "name": "SEO",
+      "webhookId": "647b1681-632d-44ea-bf65-f98d38bf4e1d",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "qsAkDegW"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        -192
+      ],
+      "id": "003b84d5-f38b-4805-b2df-f875f1023e48",
+      "name": "Lead Gen",
+      "webhookId": "660b0a8a-e925-465f-b205-ed5fc423f069",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "A3C7YNuU"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        192
+      ],
+      "id": "dd94b6e1-ee15-463d-8fe8-19a9b56ce09b",
+      "name": "Web",
+      "webhookId": "93897b91-63ed-43fb-9cd4-11f3bb8e34cd",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "AM41dq0Y"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        384
+      ],
+      "id": "5ef230e3-f950-4fa4-86fe-452f84206084",
+      "name": "SEM",
+      "webhookId": "1819a80b-3468-41fc-a912-b9c9f4097394",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "tvKzYiW1"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        576
+      ],
+      "id": "7b63ae51-ecc5-4009-8a07-01ef313201d1",
+      "name": "Consultoria Estrategica",
+      "webhookId": "b60e922a-7382-4209-8c73-291c21b83cd9",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "GZLqx0H5"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        768
+      ],
+      "id": "24d0ac00-1e9e-4250-abd0-a5358d171082",
+      "name": "Branding",
+      "webhookId": "2d72e65c-ef11-4142-8e63-1d9df9e23a9a",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "xZPudoAi"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        960
+      ],
+      "id": "75d4d958-1aaa-4abc-a5da-ec926e2fe4d9",
+      "name": "Foto",
+      "webhookId": "d0eb6319-6804-450e-967f-5e436e75e9be",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "IepUwl8d"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        1152
+      ],
+      "id": "56c83222-9140-4961-86da-8c8613ec16ad",
+      "name": "Video",
+      "webhookId": "6fade7ae-3310-4870-a785-c638d9ce0c83",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formId": "R2b3dEu1"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        1344
+      ],
+      "id": "4c78a01e-72bd-4050-883d-62072e6c280b",
+      "name": "RRSS",
+      "webhookId": "68b95b30-fe6a-4a09-88b4-7de6f8952dfe",
+      "credentials": {
+        "typeformApi": {
+          "id": "kMdogCxMJnCVwpt3",
+          "name": "Typeform account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"Lead Gen\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        -192
+      ],
+      "id": "c02f5794-2645-44c1-b041-871afdd26e53",
+      "name": "Add title Lead Gen"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"WEB\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        192
+      ],
+      "id": "a4a2ebff-1434-4405-99f9-5fdfad8d99a0",
+      "name": "Add title WEB"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"SEM\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        384
+      ],
+      "id": "8ded14b1-3d7f-444e-a6b4-70e13f0df312",
+      "name": "Add title SEM"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"Consultoria Estrategica\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        576
+      ],
+      "id": "b3ac5b46-d160-441f-b81b-e2244850ce4a",
+      "name": "Add title Consultoria Estrategica"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"Branding\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        768
+      ],
+      "id": "3ddfec7c-93b5-4ac8-a7e1-90c4164861dd",
+      "name": "Add title Branding"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"Foto\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        960
+      ],
+      "id": "d6345c13-e8f8-4a20-a47b-74bba8466958",
+      "name": "Add title Foto"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"Video\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        1152
+      ],
+      "id": "5dcd9d47-26fd-40d7-aa36-21e3b2aff02a",
+      "name": "Add title Video"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04d68e48-c609-4de1-a5cc-7474d13b2b9b",
+              "name": "field_name",
+              "value": "\"RRSS\"",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        1344
+      ],
+      "id": "429fe20d-7d99-4c86-843f-2c0a3a1ba7b3",
+      "name": "Add title RRSS"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        576
+      ],
+      "id": "e5ff62bd-a43e-4414-8e20-17016af2a97d",
+      "name": "Unify Form Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8241bb6d-ddd5-4277-a50e-01e06fceffc1",
+              "leftValue": "={{ $json.found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        576
+      ],
+      "id": "3eda74fa-0c21-4464-81c0-55f9b051d7b5",
+      "name": "Task Already Exists?"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.clickup.com/api/v2/list/901201411501/task?subtasks=false&include_closed=false",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        576
+      ],
+      "id": "52cd88c9-4c94-4f1b-843f-f32190dd64d3",
+      "name": "Get Existing Tasks",
+      "notesInFlow": false,
+      "credentials": {
+        "clickUpApi": {
+          "id": "aLT8jHhwiLQ6980U",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Datos provenientes de \"Unificar\"\nconst datos = $items(\"Unify Form Data\")[0].json;\n\n// 2) Localizamos la propiedad que contenga la palabra \"email\"\nlet emailRaw = '';\nfor (const [k, v] of Object.entries(datos)) {\n  if (k.toLowerCase().includes('email')) {\n    emailRaw = v;\n    break;\n  }\n}\n\n// 3) Si no la hemos encontrado en la raíz, intenta dentro de answers (output no simplificado)\nif (!emailRaw && Array.isArray(datos.answers)) {\n  const emailAnswer = datos.answers.find(a => a.type === 'email');\n  emailRaw = emailAnswer?.email || emailAnswer?.text || '';\n}\n\nconst email = (emailRaw || '').toLowerCase().trim();\nif (!email) throw new Error('No se ha encontrado un correo en la respuesta de Typeform.');\n\n// 4) Resto del script sin cambios…\nconst tasks = $items(\"Get Existing Tasks\")[0].json.tasks || [];\n\nconst match = tasks.find(t => {\n  const name = (t.name || '').toLowerCase();\n  const desc = (t.description || t.text_content || '').toLowerCase();\n  return name.includes(email) || desc.includes(email);\n});\n\nreturn [{\n  json: match\n    ? { found: true, task: { id: match.id, name: match.name, description: match.description || match.text_content } }\n    : { found: false }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        576
+      ],
+      "id": "7fea9efe-185b-48c9-a59b-7d072ec574bb",
+      "name": "Organize Tasks Information",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener datos del formulario desde el nodo Unificar\nconst datosFormulario = $items('Unify Form Data')[0].json;\n\n// Extraer el nombre del formulario y el email\nconst formName = datosFormulario.field_name ?? 'Formulario sin nombre';\n\n// Buscar el email en los datos\nlet email = '';\nfor (const [key, value] of Object.entries(datosFormulario)) {\n  if (key.toLowerCase().includes('email') || key.toLowerCase().includes('mail')) {\n    email = value;\n    break;\n  }\n}\n\n// Obtener datos de la tarea existente desde el nodo If\nconst tarea = $json.task;\nconst taskId = tarea.id;\nconst descripcionExistente = tarea.description ?? tarea.text_content ?? 'Sin descripción previa.';\n\n// Construir el nuevo título\nconst taskTitle = `Actualización del cliente - ${formName} - ${email}`;\n\n// Construir el contenido nuevo del formulario\nlet nuevoContenido = `\\n\\n--- Nueva actualización del formulario: ${formName} ---\\n\\n`;\nfor (const [key, value] of Object.entries(datosFormulario)) {\n  // Saltar field_name\n  if (key === 'field_name') continue;\n  \n  if (value !== null && typeof value === 'object') {\n    nuevoContenido += `${key}: ${JSON.stringify(value, null, 2)}\\n`;\n  } else {\n    nuevoContenido += `${key}: ${value}\\n`;\n  }\n}\n\n// Combinar descripción existente con nuevo contenido\nconst description = descripcionExistente + nuevoContenido.trim();\n\nreturn [{\n  json: {\n    taskId,\n    taskTitle,\n    description,\n    email\n  }\n}];"
+      },
+      "id": "2b3e7dc0-3ea4-45ab-adf3-99bef4566e0e",
+      "name": "Map Update Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "id": "={{ $json.taskId }}",
+        "updateFields": {
+          "content": "={{ $json.description }}",
+          "name": "={{ $json.taskTitle }}"
+        }
+      },
+      "id": "a8c74170-4fc7-4a8e-ba0d-f08ca872890f",
+      "name": "Update Task",
+      "type": "n8n-nodes-base.clickUp",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        672
+      ],
+      "credentials": {
+        "clickUpApi": {
+          "id": "aLT8jHhwiLQ6980U",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener datos del formulario desde el nodo Unificar\nconst datosFormulario = $items('Unify Form Data')[0].json;\n\n// Extraer el nombre del formulario y el email\nconst formName = datosFormulario.field_name ?? 'Formulario sin nombre';\n\n// Buscar el email en los datos\nlet email = '';\nfor (const [key, value] of Object.entries(datosFormulario)) {\n  if (key.toLowerCase().includes('email') || key.toLowerCase().includes('mail')) {\n    email = value;\n    break;\n  }\n}\n\n// Construir el título de la tarea\nconst taskTitle = `Nuevo cliente - ${formName} - ${email}`;\n\n// Construir la descripción con todas las preguntas y respuestas\nlet description = `Formulario: ${formName}\\n\\n`;\nfor (const [key, value] of Object.entries(datosFormulario)) {\n  // Saltar field_name ya que está en el título\n  if (key === 'field_name') continue;\n  \n  if (value !== null && typeof value === 'object') {\n    description += `${key}: ${JSON.stringify(value, null, 2)}\\n`;\n  } else {\n    description += `${key}: ${value}\\n`;\n  }\n}\n\nreturn [{\n  json: {\n    taskTitle,\n    description: description.trim(),\n    email\n  }\n}];"
+      },
+      "id": "b42605b4-d1c5-4756-8e1d-86110eca95c1",
+      "name": "Map New Task Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "team": "9008135182",
+        "space": "90124274697",
+        "folder": "90127821630",
+        "list": "901201411501",
+        "name": "={{ $json.taskTitle }}",
+        "additionalFields": {
+          "assignees": [
+            "55745321"
+          ],
+          "content": "={{ $json.description }}"
+        }
+      },
+      "id": "97ad63b3-417e-407d-8aac-9b844ade9fde",
+      "name": "Create Task",
+      "type": "n8n-nodes-base.clickUp",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        480
+      ],
+      "credentials": {
+        "clickUpApi": {
+          "id": "aLT8jHhwiLQ6980U",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Routing Logic\nCategorizes submissions based on the service selected in Typeform (SEO, Photo, Video, or Social Media) to ensure data is sorted correctly.",
+        "height": 1904,
+        "width": 704
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -336
+      ],
+      "typeVersion": 1,
+      "id": "d0a08df6-e898-44b8-9b29-8ad5e9638927",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Duplicate Prevention\nChecks ClickUp for existing tasks to prevent double-entry. If a match is found, it updates the record; otherwise, it creates a new one.",
+        "height": 544,
+        "width": 656
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        576,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "57b256d3-b545-4db1-8534-5faabd45c46c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Data Mapping\nFormats the incoming form data into a structured layout required by the ClickUp API.",
+        "height": 544,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1248,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "2a7ac5eb-940d-4428-ad25-c9a1033ae1ec",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Add title SEO": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEO": {
+      "main": [
+        [
+          {
+            "node": "Add title SEO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Gen": {
+      "main": [
+        [
+          {
+            "node": "Add title Lead Gen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web": {
+      "main": [
+        [
+          {
+            "node": "Add title WEB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEM": {
+      "main": [
+        [
+          {
+            "node": "Add title SEM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultoria Estrategica": {
+      "main": [
+        [
+          {
+            "node": "Add title Consultoria Estrategica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branding": {
+      "main": [
+        [
+          {
+            "node": "Add title Branding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Foto": {
+      "main": [
+        [
+          {
+            "node": "Add title Foto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video": {
+      "main": [
+        [
+          {
+            "node": "Add title Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RRSS": {
+      "main": [
+        [
+          {
+            "node": "Add title RRSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title Lead Gen": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title WEB": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title SEM": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title Consultoria Estrategica": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title Branding": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title Foto": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title Video": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add title RRSS": {
+      "main": [
+        [
+          {
+            "node": "Unify Form Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unify Form Data": {
+      "main": [
+        [
+          {
+            "node": "Get Existing Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task Already Exists?": {
+      "main": [
+        [
+          {
+            "node": "Map Update Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Map New Task Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Tasks": {
+      "main": [
+        [
+          {
+            "node": "Organize Tasks Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organize Tasks Information": {
+      "main": [
+        [
+          {
+            "node": "Task Already Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Update Fields": {
+      "main": [
+        [
+          {
+            "node": "Update Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map New Task Fields": {
+      "main": [
+        [
+          {
+            "node": "Create Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8d6ea52f-dcbe-40c6-9f1e-781822185829",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "56bf88d6a3a7e60ed9535836920ef5554080c7fe062432e00815d93e4706a058"
+  },
+  "id": "i8WesiIBRPdNHnBj",
+  "tags": []
+}

@@ -1,0 +1,181 @@
+{
+  "name": "AI Moto Sales Agent with Live Inventory",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "baccadf2-33c9-4c01-8e84-a4c5017e5c6b",
+      "name": "Entry: Customer Chat Webhook",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        928,
+        32
+      ],
+      "webhookId": "a7e9cf30-a589-4d22-8e41-fa47013c2f69"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres MotoGenius, un experto en ventas para una tienda de motos. Tu objetivo es vender productos usando la herramienta \"search_products\". Contesta con estilo motero.\n\nDATOS Y COMPORTAMIENTO\n\nSIEMPRE usa la herramienta \"search_products\" cuando el usuario pregunte por equipamiento (cascos, guantes, chaquetas).\n\nTienes acceso a estas columnas: SKU_ID, Marca, Modelo, Variante, PVPR, Precio Oferta, Desc. %, Estado Ciclo Vida, Notas Técnicas, Imagen URL.\n\nREGLAS\n\nIMAGEN: Debes mostrar la imagen del producto usando Markdown: ![Product](Imagen URL). Nunca recomiendes un producto sin su imagen.\n\nPRECIO: Si existe \"Precio Oferta\", calcula el ahorro y muéstrate entusiasmado. Compáralo con \"PVPR\".\n\nURGENCIA: Si \"Estado Ciclo Vida\" es \"Liquidación\", dile al usuario que queda poco stock.\n\nESPECIFICACIONES TÉCNICAS: Usa \"Notas Técnicas\" para explicar por qué es seguro/bueno (p. ej., “tiene calota AIM”, “membrana Gore-Tex”).\n\nIMPORTANTE\n\nTu objetivo es convencer al cliente de que la opción que le has proporcionado es la mejor, razona tu propuesta comentando sobre lo que te ha dicho el usuario. \nPara responder, tienes que perfilar al usuario para encontrar los productos que mejor se adapten a sus necesidades.\nSiempre que recomiendes algun producto, tienes que explicar porque el producto que recomiendas se adapta a las necesidades del usuario.\nTienes que intentar dar siempre 2 o 3 opciones, no mas.\n\nEJEMPLO\n\nUsuario: \"Hola, tengo una Yamaha MT-07 y busco un casco integral que no sea muy ruidoso para viajar, presupuesto máx 350€\"\nTu posible respuesta \"Para una naked como la MT-07 necesitas buena aerodinámica. Por ese precio, te recomiendo el Shark Spartan o el HJC RPHA por estas razones...\""
+        }
+      },
+      "id": "6e951c9e-ef85-4465-90d3-87444e261990",
+      "name": "AI: MotoGenius Sales Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1208,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "id": "26fa3135-9275-419b-82c6-90eb6c16d70b",
+      "name": "LLM: GPT-4o Mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        256
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OkI4T50xvEeb0b2r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        256
+      ],
+      "id": "e86b0d2a-aa4a-4d9e-a15b-b0539dadd559",
+      "name": "Memory: Chat History"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utiliza esta tool para obtener información sobre los cascos de los que dispone Motocard. Usala siempre para responder preguntas sobre cascos.",
+        "documentId": {
+          "__rl": true,
+          "value": "1dSXHqVGNWBNRGYzxv5IX_QMWabXT4MPaVkictKGRfRQ",
+          "mode": "list",
+          "cachedResultName": "Demo comercio electronico moto",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dSXHqVGNWBNRGYzxv5IX_QMWabXT4MPaVkictKGRfRQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1507285464,
+          "mode": "list",
+          "cachedResultName": "Cascos integrales",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dSXHqVGNWBNRGYzxv5IX_QMWabXT4MPaVkictKGRfRQ/edit#gid=1507285464"
+        },
+        "options": {}
+      },
+      "id": "24eb6440-339b-4b78-b259-6b4d1baaf20d",
+      "name": "Tool: Google Sheets Product Search",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        256
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## E-commerce Sales Agent \n\nExpert AI persona designed to sell motorcycle gear. It uses a custom tool to search live inventory in Google Sheets and provides personalized recommendations with product images and pricing alerts.",
+        "height": 608,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        824,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "499d8f97-d6ee-4079-a35a-2884c232e7f0",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entry: Customer Chat Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI: MotoGenius Sales Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: GPT-4o Mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI: MotoGenius Sales Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory: Chat History": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI: MotoGenius Sales Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Google Sheets Product Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI: MotoGenius Sales Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "86901b2a-3908-4e18-a18d-a32667994d41",
+  "meta": {
+    "instanceId": "71397bf1728f5b19b1f2c940dbca72f1ff893445941643dc73d7b8410b8afd63"
+  },
+  "id": "BWpWPyjqgoJw2U5a",
+  "tags": []
+}

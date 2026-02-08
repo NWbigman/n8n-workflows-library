@@ -1,0 +1,662 @@
+{
+  "name": "AI Sales Agent: Quote Builder & Email System",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -9872,
+        3056
+      ],
+      "id": "d350ea04-b030-4dd6-802a-26ec460d6a31",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "46KL49WGCUk4erYi",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"asunto\": {\n      \"type\": \"string\",\n      \"description\": \"El asunto del mail que enviaremos al cliente\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"El cuerpo del mail que enviaremos al cliente\"\n    },\n    \"Resumen_cliente\": {\n      \"type\": \"string\",\n      \"description\": \"Copia aqui toda la información que ha enviado el cliente\"\n    }\n  },\n  \"required\": [\"asunto\", \"email\", \"Resumen_cliente\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -9360,
+        3040
+      ],
+      "id": "4e7d8659-46ad-41ee-be36-cae57c80f3a2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"The subject line of the email\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"The body content of the email\"\n    }\n  },\n  \"required\": [\"subject\", \"email\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -8832,
+        3024
+      ],
+      "id": "2769655b-d4f2-4de9-961f-802182c8e6fc",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "team": "9008135182",
+        "events": [
+          "taskCreated",
+          "taskUpdated"
+        ],
+        "filters": {
+          "listId": "901201411501"
+        }
+      },
+      "type": "n8n-nodes-base.clickUpTrigger",
+      "typeVersion": 1,
+      "position": [
+        -11200,
+        2528
+      ],
+      "id": "55c3bc74-6ced-4207-bf7d-0c4c24fcfc43",
+      "name": "ClickUp Trigger Create and Modify",
+      "webhookId": "1060980c-2d5c-441d-b387-052910d6f086",
+      "credentials": {
+        "clickUpApi": {
+          "id": "aLT8jHhwiLQ6980U",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass if task was created.\n// Pass if task was updated and at least one history_items has id and field = \"content\".\n// Block any other case (lightweight updates without relevant history_items).\n\nconst e = $json.event;\nconst hist = Array.isArray($json.history_items) ? $json.history_items : [];\n\nif (e === \"taskCreated\") {\n\treturn items;\n}\n\nif (\n\te === \"taskUpdated\" &&\n\thist.some(h => h && h.id && h.field === \"content\")\n) {\n\treturn items;\n}\n\n// Stop execution\nreturn [];"
+      },
+      "id": "9c728d0a-bcd3-4796-a2b6-9b3adaf501a7",
+      "name": "Filter: Content Changes Only",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10976,
+        2528
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b7021e8e-d63a-411c-bc94-9a7d868a416e",
+              "name": "task_id",
+              "value": "={{ $json.task_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -10752,
+        2528
+      ],
+      "id": "23da34f8-fe74-46d7-8348-39c4bb6f8cc1",
+      "name": "Extract Task ID"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.clickup.com/api/v2/task/{{$json[\"task_id\"]}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "clickUpApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -10528,
+        2528
+      ],
+      "id": "e392cd3f-dfb3-4011-bf30-8c947db936a7",
+      "name": "Get Task Details from ClickUp",
+      "credentials": {
+        "clickUpApi": {
+          "id": "aLT8jHhwiLQ6980U",
+          "name": "ClickUp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtenemos la descripción\nconst description =$input.first().json.description;\n\n// Expresión regular para capturar el email\nconst emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/;\n\n// Ejecutamos la búsqueda en el texto\nconst email = description.match(emailRegex);\n\n// Si hay un email, lo guardamos en el JSON de salida\nreturn [{\n  json: {\n    email_cliente: email ? email[0] : \"No email found\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10304,
+        2528
+      ],
+      "id": "f4184f15-d512-43d0-88e8-b21bf7d9e051",
+      "name": "Extract Customer Email"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Customer details:\n{{ $('Get Task Details from ClickUp').item.json.description }}\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=#Rol:\nEres un asistente comercial de la empresa Adauge, especializada en marketing digital. Escribes siempre en nombre de Albert. Dispones de acceso a una base de conocimiento mediante la herramienta RAG llamada Base_Datos, donde puedes consultar información sobre los servicios, casos de éxito y detalles de la empresa.\n\n#Objetivo:\nRedactar correos profesionales, persuasivos y personalizados dirigidos a clientes que han rellenado un formulario solicitando más información o un presupuesto sobre servicios de marketing digital.\n\n#Ejemplo / Plantilla obligatoria:\nEl correo debe inspirarse en la siguiente estructura y estilo, adaptándose a los datos del cliente y al servicio solicitado:\n\nHola [NOMBRE CLIENTE],\n\nMuchas gracias por completar el formulario 🙌. He revisado tus respuestas junto con mi equipo y estamos convencidos de que podemos ser el aliado perfecto para ayudarte a alcanzar tus objetivos.\n\nYa tenemos casi lista una primera propuesta que nos encantaría presentarte y pulir contigo. ¿Qué día y hora te iría mejor para una videollamada? Si lo prefieres, también podemos reunirnos presencialmente en nuestras oficinas.\n\nQuiénes somos en ADAUGE y cómo trabajamos\n\nSomos una agencia creativa de comunicación y marketing digital.\n\nAcompañamos a nuestros clientes en todas las etapas de la comunicación y el marketing para impulsar su crecimiento en internet.\n\nNuestros servicios abarcan: desarrollo web a medida, ecommerce, SEO, SEM, CRO, branding, producción audiovisual, fotografía y gestión de redes sociales.\n\nContamos con especialistas expertos en cada área, lo que nos permite garantizar la máxima calidad en cada servicio.\n\nNuestro core team estratégico asegura una visión global y coherente para tu proyecto.\n\nTrabajamos siempre de la mano con nuestros clientes, entendiendo a fondo su negocio y objetivos para diseñar soluciones personalizadas que realmente generan resultados.\n\nSi quieres conocer más antes de nuestra reunión, en nuestra web encontrarás casos de éxito, testimonios y ejemplos de proyectos que reflejan cómo ayudamos a empresas como la tuya a crecer digitalmente.\n\n👉 Quedamos a la espera de tu confirmación para agendar la reunión y avanzar con tu propuesta.\n\nUn saludo cordial,\nAlbert – Adauge\n\n#Instrucciones para el agente:\nRespeta siempre la estructura y estilo del ejemplo, adaptando contenido a los datos del cliente y servicio solicitado.\nUsa la Base_Datos para añadir información verificada (ej. casos de éxito, detalles de servicios, etc.).\nNunca inventes información fuera de lo proporcionado en el formulario o en la Base_Datos.\nMantén un tono profesional, cercano y persuasivo.\nPersonaliza siempre con el nombre del cliente y los detalles del formulario.\nNo firmes con el nombre porque ya estará en el html del correo\nPuedes usar negritas"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -9968,
+        2528
+      ],
+      "id": "d87db042-c598-4d07-8fd3-c3ad9ab394eb",
+      "name": "AI Agent: Draft Email"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3800e373-5f7a-4642-8392-d3a4aed9e067",
+              "name": "email",
+              "value": "={{ $json.output.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -9584,
+        2528
+      ],
+      "id": "a8473e4c-1aa4-4a3e-aa10-12121db3b069",
+      "name": "Prepare Email for Review"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "albert@adauge.com",
+        "subject": "=APPROVAL REQUIRED -> {{ $('Get Task Details from ClickUp').item.json.name }}",
+        "message": "=Customer information summary:\n{{ $('AI Agent: Draft Email').item.json.output.Resumen_cliente }}\n\nPlease approve or correct this email generated by your AI Agent\n\nSubject: {{ $('AI Agent: Draft Email').item.json.output.asunto }}\n\nEmail: {{ $json.email }}",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -9296,
+        2448
+      ],
+      "id": "29fc6821-bf99-4885-9142-7bb1a2301c19",
+      "name": "Request Human Approval",
+      "webhookId": "75f822fd-a1b0-44c3-807b-9ce83a3a920b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "77thSZha80bxZH5J",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Aprobado",
+              "description": "El correo electrónico ha sido revisado y aceptado tal cual. La persona expresa explícita o implícitamente su aprobación, indicando que no se necesitan cambios. Frases de ejemplo incluyen:  \"Me parece bien.\"  \"Adelante, envíalo.\"  \"Funciona para mí.\"  \"Aprobado.\"  \"No se necesitan cambios.\""
+            },
+            {
+              "category": "Declinado",
+              "description": "El correo electrónico ha sido revisado, pero la persona solicita modificaciones antes de que se envíe, como ajustes, eliminar partes, reformulaciones, etc. Esto podría incluir sugerencias de edición, reestructuración o revisiones importantes. Frases de ejemplo incluyen:  \"¿Podemos ajustar esta parte?\"  \"Necesita algunos cambios.\"  \"Me gustaría reformular esto.\"  \"No está del todo bien, revisémoslo.\"  \"¿Puedes ajustar esto antes de enviarlo?\"  \"No menciones que no podemos hacer eso.\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        -9088,
+        2448
+      ],
+      "id": "ecf8aa92-bb38-44a1-a464-560e770690ed",
+      "name": "Classify Feedback: Approved or Declined"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "htmlContent",
+              "value": "=<!DOCTYPE html>\n<html>\n  <body style=\"font-family:Arial, sans-serif; color:#333; margin:0; padding:0;\">\n    \n    <!-- CONTENIDO GENERADO POR EL AGENTE -->\n    <div style=\"margin-bottom:20px;\">\n      {{ $('Prepare Email for Review').item.json.email.replace(/\\n/g, \"<br>\") }}\n    </div>\n\n    <!-- FIRMA PROFESIONAL ADAUGE -->\n    <table cellpadding=\"0\" width=\"500\" style=\"color:rgb(44,65,102);font-family:Montserrat,sans-serif;border-collapse:collapse;font-size:12.1px\">\n      <tbody>\n        <tr>\n          <td style=\"padding:0px\">\n            <table cellpadding=\"0\" style=\"border-collapse:collapse\">\n              <tbody>\n                <tr>\n                  <td valign=\"top\" style=\"padding:0px 15px 0px 0px\">\n                    <img src=\"https://img.mysignature.io/p/6/0/6/60686d9d-a37e-580b-89b8-08711f616512.png?time=1728049317&uid=748584&sid=1571402\" width=\"100\" alt=\"ADAUGE\" style=\"vertical-align:middle;border-style:none;display:block;min-width:100px\">\n                  </td>\n                  <td valign=\"top\" style=\"padding:0px\">\n                    <table cellpadding=\"0\" style=\"border-collapse:collapse\">\n                      <tbody>\n                        <tr>\n                          <td style=\"font-size:14.4px;line-height:18.3px;font-family:Verdana,Geneva,sans-serif;color:#000001;font-weight:600;padding-bottom:2px\">\n                            <span style=\"color:#e4006d\">Albert Escuder</span>\n                          </td>\n                        </tr>\n                        <tr>\n                          <td style=\"font-weight:600;font-family:Verdana,Geneva,sans-serif;color:#000001;line-height:15.3px;padding-bottom:8px\">\n                            Communication & Digital Strategy | ADAUGE\n                          </td>\n                        </tr>\n                        <tr>\n                          <td style=\"font-family:Verdana,Geneva,sans-serif;color:#000001;line-height:15.3px;padding:1px 0px\">\n                            🌐 <a href=\"https://mysig.io/Lv7nLQqE\" target=\"_blank\" style=\"color:#000001\">adauge.com</a>,\n                            📞 <a href=\"tel:623043001\" target=\"_blank\" style=\"color:#000001\">623043001</a>\n                          </td>\n                        </tr>\n                        <tr>\n                          <td style=\"font-family:Verdana,Geneva,sans-serif;color:#000001;line-height:15.3px;padding:1px 0px\">\n                            ✍🏻 <a href=\"https://mysig.io/GoEegYvo\" target=\"_blank\" style=\"color:#474747\">Aviso Legal</a>\n                          </td>\n                        </tr>\n                        <tr>\n                          <td style=\"padding-top:10px\">\n                            <table cellpadding=\"0\" style=\"border-collapse:collapse\">\n                              <tbody>\n                                <tr>\n                                  <td style=\"padding-right:4px\">\n                                    <a href=\"https://mysig.io/307x5Lqb\" target=\"_blank\">\n                                      <img width=\"22\" src=\"https://img.mysignature.io/s/d/4/3/d43466f8-2274-50c1-908f-360a6a0c371d.png?uid=748584&sid=1571402&time=1728049317\" alt=\"LinkedIn\" style=\"vertical-align:middle;border-style:none;display:block;\">\n                                    </a>\n                                  </td>\n                                  <td style=\"padding-right:4px\">\n                                    <a href=\"https://mysig.io/glmVAmoR\" target=\"_blank\">\n                                      <img width=\"22\" src=\"https://img.mysignature.io/s/7/a/4/7a4e6098-9097-549a-9136-1aa07c5cb306.png?uid=748584&sid=1571402&time=1728049317\" alt=\"Instagram\" style=\"vertical-align:middle;border-style:none;display:block;\">\n                                    </a>\n                                  </td>\n                                  <td style=\"padding-right:4px\">\n                                    <a href=\"https://mysig.io/rbLeBqpP\" target=\"_blank\">\n                                      <img width=\"22\" src=\"https://img.mysignature.io/s/4/8/6/486a7ed9-293f-5c35-a190-fde492ff6bfb.png?uid=748584&sid=1571402&time=1728049317\" alt=\"TikTok\" style=\"vertical-align:middle;border-style:none;display:block;\">\n                                    </a>\n                                  </td>\n                                </tr>\n                              </tbody>\n                            </table>\n                          </td>\n                        </tr>\n                        <tr>\n                          <td style=\"padding-top:15px\">\n                            <a href=\"https://mysig.io/X5aKDkRv\" target=\"_blank\">\n                              <img src=\"https://img.mysignature.io/b/6/0/6/60686d9d-a37e-580b-89b8-08711f616512.png?time=1728049317&uid=748584&sid=1571402\" width=\"102\" alt=\"ADAUGE\" style=\"vertical-align:middle;border-style:none;display:block;\">\n                            </a>\n                          </td>\n                        </tr>\n                        <tr>\n                          <td style=\"padding-top:10px\">\n                            <a href=\"https://mysig.io/Bkl8Ygvk\" target=\"_blank\">\n                              <img src=\"https://img.mysignature.io/a/v1/4/f/3/4f3677cf-757d-57f9-a43d-1a488ceb2445.png?uid=748584&sid=1571402&time=1728049317\" alt=\"Agenda una reunión en Meet\" width=\"270\" style=\"vertical-align:middle;border-style:none;display:block;\">\n                            </a>\n                          </td>\n                        </tr>\n                      </tbody>\n                    </table>\n                  </td>\n                </tr>\n              </tbody>\n            </table>\n          </td>\n        </tr>\n      </tbody>\n    </table>\n\n  </body>\n</html>\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5bce12f0-95bf-4d95-933e-bb1cd727dc9b",
+      "name": "Build HTML Email with Signature",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -8384,
+        2400
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Extract Customer Email').item.json.email_cliente }}",
+        "subject": "={{ $('AI Agent: Draft Email').item.json.output.asunto }}",
+        "message": "={{$json[\"htmlContent\"]}}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -8160,
+        2400
+      ],
+      "id": "f8aabf00-18a1-475f-8efd-5168d9a3f3d1",
+      "name": "Send Final Email to Customer",
+      "webhookId": "eb575d00-5121-4f4f-a71f-7a93485bef34",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "77thSZha80bxZH5J",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "Base_Datos",
+        "toolDescription": "Utiliza esta herramienta para obtener información sobre le empresa (Adauge).",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.1,
+      "position": [
+        -10080,
+        2752
+      ],
+      "id": "ffcdb1a4-beef-4653-b508-7ac8a4d260a2",
+      "name": "Knowledge Base: Company Info",
+      "credentials": {
+        "supabaseApi": {
+          "id": "goMd38JcjlhIdBUc",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -9136,
+        3040
+      ],
+      "id": "b120eafa-dea7-4ff6-a15e-cdb0daf466a8",
+      "name": "OpenAI GPT-4o Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "46KL49WGCUk4erYi",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 📥 TRIGGER & FILTER\n\nMonitors ClickUp for new or modified tasks and filters only content changes",
+        "height": 328,
+        "width": 448,
+        "color": 2
+      },
+      "id": "8e330b1e-763a-4145-8ea2-6b713578e6ca",
+      "name": "📥 TRIGGER & FILTER",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -11264,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🔍 DATA EXTRACTION\n\nExtracts task ID, fetches full task details from ClickUp API, and parses customer email address",
+        "height": 328,
+        "width": 632,
+        "color": 3
+      },
+      "id": "5ebd8414-dce1-47a3-8ce9-4839a4fcb2ed",
+      "name": "🔍 DATA EXTRACTION",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -10784,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 AI EMAIL GENERATION\n\nAI agent drafts personalized email using customer details and company knowledge base",
+        "height": 488,
+        "width": 724,
+        "color": 4
+      },
+      "id": "52899100-de1f-4f48-aa2b-629b8dc46967",
+      "name": "🤖 AI EMAIL GENERATION",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -10128,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 👤 HUMAN REVIEW LOOP\n\nSends draft to Albert for approval. If declined, AI revises based on feedback and loops back",
+        "height": 600,
+        "width": 888,
+        "color": 5
+      },
+      "id": "abd86e26-1bdc-4909-85ff-b889771195bd",
+      "name": "👤 HUMAN REVIEW LOOP",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9376,
+        2272
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📧 FINAL EMAIL DELIVERY\n\nBuilds HTML email with signature and sends to customer",
+        "height": 340,
+        "width": 496,
+        "color": 6
+      },
+      "id": "b5a1e760-b39a-4c3f-a76d-c1204ac173a8",
+      "name": "📧 FINAL EMAIL DELIVERY",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8464,
+        2272
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 AI COMPONENTS\n\nGPT-4o model, knowledge base with embeddings, and output parsers for structured data",
+        "height": 300,
+        "width": 1636,
+        "color": 7
+      },
+      "id": "15067607-9cec-4d19-a71d-d89bb1bc3e02",
+      "name": "🧠 AI COMPONENTS",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -10128,
+        2896
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Email: {{ $('Prepare Email for Review').item.json.email }}\n\nHuman feedback: {{ $json.data.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Visión general\nEres un experto redactor de correos electrónicos. Tu trabajo consiste en tomar un correo entrante y revisarlo en función de los comentarios proporcionados por la persona.\n\n# Reglas\nFirma los correos electrónicos como Albert Escuder\nAquí está la fecha/hora actual: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -8784,
+        2672
+      ],
+      "id": "e581515e-fc0e-4edf-823b-bd10ac5daa37",
+      "name": "Quality Reviewer"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Knowledge Base: Company Info",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent: Draft Email",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Quality Reviewer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ClickUp Trigger Create and Modify": {
+      "main": [
+        [
+          {
+            "node": "Filter: Content Changes Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Content Changes Only": {
+      "main": [
+        [
+          {
+            "node": "Extract Task ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Task ID": {
+      "main": [
+        [
+          {
+            "node": "Get Task Details from ClickUp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Task Details from ClickUp": {
+      "main": [
+        [
+          {
+            "node": "Extract Customer Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Customer Email": {
+      "main": [
+        [
+          {
+            "node": "AI Agent: Draft Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent: Draft Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email for Review": {
+      "main": [
+        [
+          {
+            "node": "Request Human Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Human Approval": {
+      "main": [
+        [
+          {
+            "node": "Classify Feedback: Approved or Declined",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Feedback: Approved or Declined": {
+      "main": [
+        [
+          {
+            "node": "Build HTML Email with Signature",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Quality Reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build HTML Email with Signature": {
+      "main": [
+        [
+          {
+            "node": "Send Final Email to Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Knowledge Base: Company Info": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent: Draft Email",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT-4o Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent: Draft Email",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Quality Reviewer",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Classify Feedback: Approved or Declined",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Reviewer": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email for Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "edf97ca3-bb9e-40e3-8cb0-cebcd150c192",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "56bf88d6a3a7e60ed9535836920ef5554080c7fe062432e00815d93e4706a058"
+  },
+  "id": "hv384l5taodXpCX9",
+  "tags": []
+}

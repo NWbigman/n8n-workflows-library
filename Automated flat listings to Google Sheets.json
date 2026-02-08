@@ -1,0 +1,363 @@
+{
+  "name": "ShBarcelona Property Listings Web Scraper to Google Sheets",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        272
+      ],
+      "id": "e4af40fc-8c27-4a8e-8258-470f62377d24",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v1/scrape",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer fc-b2743654456e4c4b8e5eadf30bdac816"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"https://www.shbarcelona.es/barcelona-alquiler?pag={{ $json.numero_pagina }}\",\n  \"formats\": [\"extract\"],\n  \"extract\": {\n    \"prompt\": \"Extrae una lista de todos los apartamentos de alquiler. Para cada uno, obtén el título (calle o edificio) y la URL completa del anuncio.\",\n    \"schema\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"apartamentos\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"titulo\": { \"type\": \"string\" },\n              \"url\": { \"type\": \"string\" }\n            },\n            \"required\": [\"titulo\", \"url\"]\n          }\n        }\n      }\n    }\n  },\n  \"waitFor\": 10000\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1904,
+        192
+      ],
+      "id": "0cae3483-ee1c-48cd-a18b-2371acb74e60",
+      "name": "Firecrawl - Extracción de Pisos"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.extract.apartamentos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        192
+      ],
+      "id": "1bc8e4cf-ea56-4217-a948-372ac21ed7b4",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA",
+          "mode": "list",
+          "cachedResultName": "shbarcelona inmobiliaira",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PIsos de la web",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $json.url }}",
+            "Titulo": "={{ $json.titulo }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "Titulo",
+              "displayName": "Titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipo de alquiler",
+              "displayName": "Tipo de alquiler",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Descripcion",
+              "displayName": "Descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Equipamiento",
+              "displayName": "Equipamiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Precio mensual",
+              "displayName": "Precio mensual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fianza mínima",
+              "displayName": "Fianza mínima",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Honorarios agencia",
+              "displayName": "Honorarios agencia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Direccción",
+              "displayName": "Direccción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Foto1",
+              "displayName": "Foto1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Foto2",
+              "displayName": "Foto2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Foto3",
+              "displayName": "Foto3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "88b22a16-f654-4db8-95bc-8d5cfc3fe94e",
+      "name": "Save title and URL to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        272
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v1/scrape",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer fc-b2743654456e4c4b8e5eadf30bdac816"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"url\": \"https://www.shbarcelona.es/barcelona-alquiler\",\n  \"formats\": [\"extract\"],\n  \"extract\": {\n    \"prompt\": \"Extrae el número total de páginas disponibles en la paginación del sitio. Busca el último número de página en los controles de paginación.\",\n    \"schema\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"total_paginas\": { \"type\": \"number\" }\n      }\n    }\n  },\n  \"waitFor\": 10000\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "77eeb4b4-fa40-455c-addf-ce9db7f44b95",
+      "name": "Detect Total Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1232,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const totalPaginas = $input.first().json.data.extract.total_paginas || 1;\nconst pages = [];\n\nfor (let i = 1; i <= totalPaginas; i++) {\n  pages.push({ numero_pagina: i });\n}\n\nreturn pages.map(page => ({ json: page }));"
+      },
+      "id": "98798907-9858-4a32-8853-66737db257d3",
+      "name": "Generate Page Numbers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "928541af-9558-48b9-8dbb-7879788b98af",
+      "name": "Loop Over Pages",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1680,
+        272
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Firecrawl - Extracción de Pisos": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Save title and URL to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Detect Total Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Total Pages": {
+      "main": [
+        [
+          {
+            "node": "Generate Page Numbers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Page Numbers": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Pages": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Firecrawl - Extracción de Pisos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save title and URL to Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "093e6e44-a452-4574-a588-5f538eced051",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71397bf1728f5b19b1f2c940dbca72f1ff893445941643dc73d7b8410b8afd63"
+  },
+  "id": "yRaoIutUyujZuAkZ",
+  "tags": []
+}

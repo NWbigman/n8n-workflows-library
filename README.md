@@ -47,6 +47,11 @@ An AI-powered assistant that acts as a 24/7 sales agent for property inquiries.
 * **Logic**: Routes form entries by category and uses conditional branches to decide between an Update or Create action.
 * **Tools**: n8n, Typeform, ClickUp.
 
+### **8. AI Sales Agentic Loop & Quote Generator**
+* **Purpose**: Automates high-quality sales emails by cross-referencing company knowledge.
+* **Innovation**: Uses a "Creator-Reviewer" agent pattern to minimize hallucinations and ensure professional standards.
+* **Tools**: GPT-4o, LangChain, Embeddings, HTML/CSS.
+
 ## 🛠️ How to Use
 1.  **Download**: Choose the `.json` file for the workflow you want to use.
 2.  **Import**: In your n8n instance, click "Import from File" and select the JSON.

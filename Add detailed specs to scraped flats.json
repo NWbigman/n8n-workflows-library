@@ -1,0 +1,676 @@
+{
+  "name": "Enriquecimiento Automático de Base de Datos de Pisos desde Web",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA",
+          "mode": "list",
+          "cachedResultName": "shbarcelona inmobiliaira",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PIsos de la web",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "0aab64d5-2493-467d-b97c-f7199e77c74b",
+      "name": "Get Pisos from Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "327ffd4f-0584-4337-8869-606770e855c3",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        928,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "id": "8873fc5b-945c-401d-98a5-36c0de6103fd",
+      "name": "Wait 3 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1152,
+        112
+      ],
+      "webhookId": "7b93140a-c1c2-4d1a-8557-9a786be25d19"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.URL }}",
+        "options": {}
+      },
+      "id": "f874c9cd-2194-4857-b2bb-5f6862d12643",
+      "name": "Fetch Property Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1376,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "Referencia",
+              "cssSelector": "input#property_reference",
+              "returnValue": "attribute",
+              "attribute": "value"
+            },
+            {
+              "key": "Direccion",
+              "cssSelector": ".situation"
+            },
+            {
+              "key": "Zona",
+              "cssSelector": ".localitation"
+            },
+            {
+              "key": "MetrosCuadrados",
+              "cssSelector": ".feature-box.m2"
+            },
+            {
+              "key": "Dormitorios",
+              "cssSelector": ".feature-box.rooms"
+            },
+            {
+              "key": "Banos",
+              "cssSelector": ".feature-box.aseos"
+            },
+            {
+              "key": "PrecioMensual",
+              "cssSelector": ".property-price-container"
+            },
+            {
+              "key": "FianzaMinima",
+              "cssSelector": ".property-row-info div:nth-child(5) span"
+            },
+            {
+              "key": "PreciosHonorarios",
+              "cssSelector": ".col-xs-5.borderbotf span",
+              "returnArray": true
+            },
+            {
+              "key": "TitulosHonorarios",
+              "cssSelector": ".col-xs-7.borderbotf",
+              "returnArray": true
+            },
+            {
+              "key": "Equipamiento_SI",
+              "cssSelector": ".fearure_ok_2 .textequip, .fearure_ok_2 .textequipgr",
+              "returnArray": true
+            },
+            {
+              "key": "Equipamiento_NO",
+              "cssSelector": ".feature-div-container:not(.fearure_ok_2) .textequip, .feature-div-container:not(.fearure_ok_2) .textequipgr",
+              "returnArray": true
+            },
+            {
+              "key": "Descripcion_Titulo",
+              "cssSelector": "#titdescricion"
+            },
+            {
+              "key": "Descripcion_Cuerpo",
+              "cssSelector": "#pol"
+            },
+            {
+              "key": "Descripcion_Info_Legal",
+              "cssSelector": ".pol"
+            },
+            {
+              "key": "Fotos",
+              "cssSelector": ".lazyload",
+              "returnValue": "attribute",
+              "attribute": "data-src",
+              "returnArray": true
+            },
+            {
+              "key": "Disponibilidad_Cruda",
+              "cssSelector": ".property-availability"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "id": "319029d8-1480-4ee9-923a-7592c5c8a487",
+      "name": "Extract Property Data",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3dd53408-683c-4e88-8d66-151b4c702620",
+              "name": "Referencia",
+              "value": "={{ $json.Referencia }}",
+              "type": "string"
+            },
+            {
+              "id": "4de3f1a4-39c0-4bdc-9c93-e078bf1b8cab",
+              "name": "Direccion",
+              "value": "={{ $json.Direccion }}",
+              "type": "string"
+            },
+            {
+              "id": "b6bc9da9-f27a-4ef3-8a24-1daae1643303",
+              "name": "MetrosCuadrados",
+              "value": "={{ $json.MetrosCuadrados.replace(/[^\\d]/g, '') }}",
+              "type": "number"
+            },
+            {
+              "id": "6b4d6563-2f63-4f13-bdc6-caa84f69b27d",
+              "name": "Dormitorios",
+              "value": "={{ $json.Dormitorios }}",
+              "type": "string"
+            },
+            {
+              "id": "3a107ad0-aaa2-4548-8100-f83138d9074c",
+              "name": "Banos",
+              "value": "={{ $json.Banos }}",
+              "type": "string"
+            },
+            {
+              "id": "dc3eacad-d4ab-4bf9-af81-4e2d471e2490",
+              "name": "PrecioMensual",
+              "value": "={{ $json.PrecioMensual.replace(/[^\\d]/g, '') }}",
+              "type": "number"
+            },
+            {
+              "id": "0b2c012d-cdba-4455-a08c-cc00cd64ac4b",
+              "name": "FianzaMinima",
+              "value": "={{ $json.FianzaMinima.replace(/[^\\d]/g, '') }}",
+              "type": "number"
+            },
+            {
+              "id": "ea7a5981-945c-49f7-97bd-81e5e3b8656d",
+              "name": "Equipamiento_SI",
+              "value": "={{ $json.Equipamiento_SI.join(', ') }}",
+              "type": "string"
+            },
+            {
+              "id": "6e89e6ae-5d29-4fdc-9fed-1338316a273c",
+              "name": "Equipamiento_NO",
+              "value": "={{ $json.Equipamiento_NO.join(', ') }}",
+              "type": "string"
+            },
+            {
+              "id": "874afed4-31fa-4477-aed8-d75bb3cc9d9d",
+              "name": "Fotos_Galeria",
+              "value": "={{ [...new Set($json.Fotos.filter(url => url.includes('inmuebles/imagenes/')).map(url => url.replace('/tn/', '/')))].join(', ') }}",
+              "type": "string"
+            },
+            {
+              "id": "0dfe5767-0367-4c8c-8ad1-66230117441a",
+              "name": "Foto_Principal",
+              "value": "={{ [...new Set($json.Fotos.filter(url => url.includes('inmuebles/imagenes/')).map(url => url.replace('/tn/', '/')))][0] }}",
+              "type": "string"
+            },
+            {
+              "id": "3b2a3800-9089-4d66-9d12-5a989d32e2cb",
+              "name": "Disponibilidad",
+              "value": "={{ $json.Disponibilidad_Cruda.replace(/\\s+/g, ' ').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "aa1785b3-b904-4697-a46c-d635b7e60d7d",
+              "name": "Descripcion_Full",
+              "value": "={{ ($json.Descripcion_Titulo + '. ' + $json.Descripcion_Cuerpo + '. ' + $json.Descripcion_Info_Legal).replace(/\\n/g, ' ').replace(/\\s\\s+/g, ' ').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "ef4ac1d7-a755-4b2c-bab7-965d01e44fa4",
+              "name": "Barrio",
+              "value": "={{ $json.Zona.replace(/ Barcelona$/, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "7f76965f-ba3e-4c53-938f-bf542fedc1bf",
+              "name": "Honorarios_1_3_meses",
+              "value": "={{ $json.PreciosHonorarios[0].replace(/[^\\d,]/g, '').replace(',', '.') }}",
+              "type": "number"
+            },
+            {
+              "id": "017331c5-80ad-42ce-b9b4-f61cd8f42349",
+              "name": "Honorarios_3_5_meses",
+              "value": "={{ $json.PreciosHonorarios[1].replace(/[^\\d,]/g, '').replace(',', '.') }}",
+              "type": "number"
+            },
+            {
+              "id": "31740a65-317a-4e8f-afa9-40bd65faacc8",
+              "name": "Honorarios_5_11_meses",
+              "value": "={{ $json.PreciosHonorarios[2].replace(/[^\\d,]/g, '').replace(',', '.') }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1019d7d7-9268-49e7-8e64-763ca1e6fb75",
+      "name": "Prepare Update Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1824,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA",
+          "mode": "list",
+          "cachedResultName": "shbarcelona inmobiliaira",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PIsos de la web",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $('Wait 3 Seconds').item.json.URL }}",
+            "row_number": 0,
+            "Referencia": "={{ $json.Referencia }}",
+            "Direccion": "={{ $json.Direccion }}",
+            "MetrosCuadrados": "={{ $json.MetrosCuadrados }}",
+            "Dormitorios": "={{ $json.Dormitorios }}",
+            "PrecioMensual": "={{ $json.PrecioMensual }}",
+            "Equipamiento_SI": "={{ $json.Equipamiento_SI }}",
+            "Equipamiento_NO": "={{ $json.Equipamiento_NO }}",
+            "Titulo": "={{ $('Wait 3 Seconds').item.json.Titulo }}",
+            "Foto_Principal": "={{ $json.Foto_Principal }}",
+            "Fotos_Galeria": "={{ $json.Fotos_Galeria }}",
+            "Barrio": "={{ $json.Barrio }}",
+            "Baños": "={{ $json.Banos }}",
+            "Descripcion": "={{ $json.Descripcion_Full }}",
+            "Honorarios agencia para estancia entre 1 a 3 meses": "={{ $json.Honorarios_1_3_meses }}",
+            "Honorarios agencia para estancia entre 3 a 5 meses": "={{ $json.Honorarios_3_5_meses }}",
+            "Honorarios agencia para estancia entre 5 a 11 meses": "={{ $json.Honorarios_5_11_meses }}",
+            "Fianza Minima": "={{ $json.FianzaMinima }}",
+            "Disponibilidad": "={{ $json.Disponibilidad }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "Titulo",
+              "displayName": "Titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referencia",
+              "displayName": "Referencia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Direccion",
+              "displayName": "Direccion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Barrio",
+              "displayName": "Barrio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MetrosCuadrados",
+              "displayName": "MetrosCuadrados",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Dormitorios",
+              "displayName": "Dormitorios",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Baños",
+              "displayName": "Baños",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PrecioMensual",
+              "displayName": "PrecioMensual",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Equipamiento_SI",
+              "displayName": "Equipamiento_SI",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Equipamiento_NO",
+              "displayName": "Equipamiento_NO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Descripcion",
+              "displayName": "Descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fotos_Galeria",
+              "displayName": "Fotos_Galeria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Foto_Principal",
+              "displayName": "Foto_Principal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Honorarios agencia para estancia entre 1 a 3 meses",
+              "displayName": "Honorarios agencia para estancia entre 1 a 3 meses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Honorarios agencia para estancia entre 3 a 5 meses",
+              "displayName": "Honorarios agencia para estancia entre 3 a 5 meses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Honorarios agencia para estancia entre 5 a 11 meses",
+              "displayName": "Honorarios agencia para estancia entre 5 a 11 meses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fianza Minima",
+              "displayName": "Fianza Minima",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Disponibilidad",
+              "displayName": "Disponibilidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "4dcb8e45-d15d-43a6-9c54-43acdfebf15f",
+      "name": "Update Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2048,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "91d9c469-563f-46a6-a31c-966f90daa279",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        480,
+        192
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Pisos from Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait 3 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Fetch Property Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Property Page": {
+      "main": [
+        [
+          {
+            "node": "Extract Property Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Property Data": {
+      "main": [
+        [
+          {
+            "node": "Prepare Update Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Update Data": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get Pisos from Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "044cb09e-5e00-4959-8ae0-ffce47ed0bce",
+  "meta": {
+    "instanceId": "71397bf1728f5b19b1f2c940dbca72f1ff893445941643dc73d7b8410b8afd63"
+  },
+  "id": "mp2OudFaCvf8zcAK",
+  "tags": []
+}

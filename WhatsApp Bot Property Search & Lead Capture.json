@@ -1,0 +1,1081 @@
+{
+  "name": "WhatsApp Demo",
+  "nodes": [
+    {
+      "parameters": {
+        "tableId": "message_queue",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Nuevo mensaje').item.json.body.data.from }}"
+            },
+            {
+              "fieldId": "message",
+              "fieldValue": "={{ $('Nuevo mensaje').item.json.body.data.body }}"
+            },
+            {
+              "fieldId": "message_id",
+              "fieldValue": "={{ $('Nuevo mensaje').item.json.body.data.id }}"
+            },
+            {
+              "fieldId": "timestamp",
+              "fieldValue": "={{ $('Nuevo mensaje').item.json.body.data.time }}"
+            }
+          ]
+        }
+      },
+      "id": "22d354d0-93e8-4413-a7fc-8c9bed61dc74",
+      "name": "Agregar a mensajes en cola",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        128,
+        944
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "RGXR4TCnxW4gnVaz",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Guarda el mensaje en Supabase (tabla message_queue) con user_id, message, message_id y timestamp."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "message_queue",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "91b93d53-e4b2-46bf-a0c4-01fe0eebf883",
+      "name": "Obtener mensajes en cola",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        576,
+        944
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "RGXR4TCnxW4gnVaz",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Lee de Supabase todos los mensajes pendientes del usuario actual."
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "timestamp",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5ab046bc-2aaa-474f-96f9-eb4baf508b07",
+      "name": "Ordenar por ID de mensaje",
+      "type": "n8n-nodes-base.sort",
+      "position": [
+        800,
+        944
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "Ordena los mensajes por timestamp descendente para identificar el más reciente primero."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mantener solo el primer item de todos los que llegan\nreturn [items[0]];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        944
+      ],
+      "id": "02dde4c8-b9af-468a-8aa5-7cf3aa9222bc",
+      "name": "Código",
+      "notesInFlow": true,
+      "notes": "Deja solo el primer ítem (el más reciente) de la lista de mensajes tras ordenar."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "8852bab7-230e-442a-a4a2-994e979c8f9f",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.message_id }}",
+              "rightValue": "={{ $('Nuevo mensaje').item.json.body.data.id }}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "31c98c05-daab-4ee6-abc7-7eda74b3476a",
+      "name": "Verificar mensaje más reciente",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1248,
+        944
+      ],
+      "typeVersion": 2.2,
+      "notesInFlow": true,
+      "notes": "Comprueba que el message_id coincide con el último recibido por el disparador. Si no, corta el flujo."
+    },
+    {
+      "parameters": {},
+      "id": "4c35af64-6cff-42b2-ab90-181e534784ef",
+      "name": "Sin operación, no hacer nada",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1472,
+        1040
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "Rama nula si el mensaje no es el más reciente; no ejecuta acciones."
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "message_queue",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "e4108354-dada-4b30-9d46-d7c52444e2bf",
+      "name": "Eliminar mensajes en cola",
+      "type": "n8n-nodes-base.supabase",
+      "position": [
+        1472,
+        848
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "RGXR4TCnxW4gnVaz",
+          "name": "Supabase account"
+        }
+      },
+      "notes": "Borra de Supabase los mensajes en cola de ese usuario (ya procesados)."
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "message"
+            },
+            {
+              "fieldToAggregate": "user_id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7e617851-8198-49e8-a5e6-49449d6cc888",
+      "name": "Agrupar",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        1696,
+        848
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "Agrupa el campo 'message' en una colección (array) para entregar todo el contexto al Agente IA."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "timeout": 130000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2368,
+        1296
+      ],
+      "id": "9e053f9c-36ad-48ba-b679-c3920f3fe766",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "OkI4T50xvEeb0b2r",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance150155/messages/chat",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "2jg28az7ui090fwk"
+            },
+            {
+              "name": "to",
+              "value": "={{ $(\"Agrupar\").first().json.user_id[0] }}"
+            },
+            {
+              "name": "body",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3792,
+        1088
+      ],
+      "id": "13ecec05-9ee7-40de-8f56-a55a809e8184",
+      "name": "Respuesta"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Úsala ÚNICAMENTE cuando hayas recopilado TODOS los datos de calificación (nombre, email, ingresos, situación laboral, nacionalidad, estancia y fecha de entrada). Esta herramienta guarda el perfil completo del cliente en la pestaña de Leads para que el equipo comercial le contacte.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA",
+          "mode": "list",
+          "cachedResultName": "Inmobiliaria Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 419751012,
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit#gid=419751012"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha_Registro": "={{ $now.setZone('Europe/Madrid').toFormat('dd/MM/yyyy HH:mm') }}",
+            "Referencia_Interes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Referencia_Interes', `Obligatorio: La referencia real alfanumérica del piso (ej: T8786-2 o I20707-1) tal cual aparece en el catálogo. PROHIBIDO inventar códigos como PISO_DISP o usar fechas.`, 'string') }}",
+            "Nombre": "={{ $fromAI(\"nombre\") }}",
+            "Email": "={{ $fromAI(\"email\") }}",
+            "Telefono": "={{ $('Nuevo mensaje').first().json.body.data.from.split('@')[0] }}",
+            "Num_Inquilinos": "={{ $fromAI(\"inquilinos\", \"El numero de personas que vivivirá en el piso\", \"number\") }}",
+            "Ingresos_Mensuales_Netos": "={{ $fromAI(\"ingresos\") }}",
+            "Situacion_Laboral": "={{ $fromAI(\"trabajo\", \"Puesto de trabajo y antigüedad EN CASTELLANO.\", \"string\") }}",
+            "Antiguedad": "={{ $fromAI(\"antiguedad\") }}",
+            "Nacionalidad": "={{ $fromAI(\"nacionalidad\", \"La nacioanlidad del usuario escrita en castellano\", \"string\") }}",
+            "Estancia_Meses": "={{ $fromAI(\"meses\") }}",
+            "Fecha_Entrada": "={{ $fromAI(\"entrada\") }}",
+            "Resumen_IA": "={{ $fromAI(\"resumen\", \"Resumen ejecutivo del perfil del cliente EN CASTELLANO.\", \"string\") }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha_Registro",
+              "displayName": "Fecha_Registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referencia_Interes",
+              "displayName": "Referencia_Interes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Telefono",
+              "displayName": "Telefono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Num_Inquilinos",
+              "displayName": "Num_Inquilinos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ingresos_Mensuales_Netos",
+              "displayName": "Ingresos_Mensuales_Netos",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Situacion_Laboral",
+              "displayName": "Situacion_Laboral",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Antiguedad",
+              "displayName": "Antiguedad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nacionalidad",
+              "displayName": "Nacionalidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estancia_Meses",
+              "displayName": "Estancia_Meses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha_Entrada",
+              "displayName": "Fecha_Entrada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resumen_IA",
+              "displayName": "Resumen_IA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2496,
+        1216
+      ],
+      "id": "1ecfaa71-b67c-4a3e-97f0-9c79280e2458",
+      "name": "registrar_lead_calificado",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 0.3
+      },
+      "id": "c784f97d-502c-434c-ad5e-e2afa153ec2c",
+      "name": "Esperar 5 segundos",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        352,
+        944
+      ],
+      "webhookId": "1af19e27-d648-4926-87fd-2ff0ea544f76",
+      "typeVersion": 1.1,
+      "notesInFlow": true,
+      "notes": "Buffer: espera breve para captar mensajes consecutivos del mismo usuario y poder agruparlos."
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Úsala para buscar pisos disponibles. Es OBLIGATORIO pasar el parámetro 'barrio' para filtrar la búsqueda. Esta herramienta solo devuelve la Referencia, el Título, el Barrio y el Precio para evitar saturar el sistema.",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA",
+          "mode": "list",
+          "cachedResultName": "Inmobiliaria Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PIsos de la web",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit#gid=0"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "A:L"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2624,
+        1264
+      ],
+      "id": "8797a381-1bd2-4200-baea-0aff1604fdf4",
+      "name": "cargar_catalogo",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Con esta herramienta puedes obtener toda la información sobre los pisos",
+        "documentId": {
+          "__rl": true,
+          "value": "1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA",
+          "mode": "list",
+          "cachedResultName": "Inmobiliaria Demo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PIsos de la web",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ur_din3bXSGHcK4RcywK70VGgRI5tHWV0hh6biMAUGA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Referencia",
+              "lookupValue": "={{ $fromAI(\"referencia\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2752,
+        1216
+      ],
+      "id": "b1264d62-82c6-45f5-b9c1-1fe6e0126ad7",
+      "name": "obtener_detalle_piso",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "co7lR2dfuXiQYoip",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "gl": "es",
+          "device": "desktop",
+          "google_domain": "google.com"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        1264
+      ],
+      "id": "15a8896c-51a7-40c3-b76d-603e1be6ada8",
+      "name": "Google Search Tool",
+      "credentials": {
+        "serpApi": {
+          "id": "1eUJSiXjSLGimGTc",
+          "name": "SerpAPI account"
+        }
+      },
+      "notes": "\"Úsala para buscar información actualizada sobre barrios de Barcelona (seguridad, ambiente, zonas de fiesta, cercanía a puntos de interés o playas). Di siempre que has consultado la información en internet.\""
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capturamos el ítem de entrada\nconst fullText = $input.item.json.output || \"\";\n\nlet thinking = \"\";\nlet answer = \"\";\n\n// 1. Extraer pensamiento: Todo lo que esté entre <thinking> y </thinking>\nconst thinkingMatch = fullText.match(/<thinking>([\\s\\S]*?)<\\/thinking>/i);\nif (thinkingMatch) {\n    thinking = thinkingMatch[1].trim();\n}\n\n// 2. Extraer respuesta: Priorizamos lo que esté entre <answer> y </answer>\nconst answerMatch = fullText.match(/<answer>([\\s\\S]*?)<\\/answer>/i);\n\nif (answerMatch) {\n    answer = answerMatch[1].trim();\n} else {\n    // Si no hay etiquetas <answer>, tomamos todo lo que esté DESPUÉS de </thinking>\n    const parts = fullText.split(/<\\/thinking>/i);\n    answer = parts.length > 1 ? parts[1].trim() : fullText.trim();\n}\n\n// 3. Limpieza de seguridad: Eliminar cualquier tag XML residual que haya quedado\nanswer = answer.replace(/<[^>]*>/g, '').trim();\n\nreturn [{\n    json: {\n        thinking: thinking,\n        answer: answer\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3344,
+        992
+      ],
+      "id": "7b4f61ee-87a3-4152-b694-3e867c41d87e",
+      "name": "Answer and thinking split"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Toma el mensaje del agente (ajusta el campo según tu output)\nlet text = $json.answer || \"\";\n\n// Reemplaza doble asterisco por uno solo\ntext = text.replace(/\\*\\*/g, '*');\n\nreturn {\n  output: text\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3568,
+        1088
+      ],
+      "id": "bb70784d-1f63-4f15-bfb9-aaa0276587ce",
+      "name": "Corregir doble *"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  (message->'data'->>'content') as texto,\n  (message->>'type') as tipo\nFROM public.n8n_chat_histories\nWHERE session_id = '{{ $json.user_id[0] }}'\nORDER BY id DESC\nLIMIT 15;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1920,
+        848
+      ],
+      "id": "5176be15-9bcb-44ea-8842-22b5c62ce4fa",
+      "name": "Obtener Historial",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "cvjjrdHCCKUMPcLp",
+          "name": "Demo WhatsApp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Capturamos todos los items que vienen del nodo anterior\nconst items = $input.all();\n\n// Verificamos si el primer item tiene datos reales de la base de datos\n// Si no hay 'texto' (porque la consulta devolvió 0 filas), devolvemos un string vacío\nif (items.length === 0 || !items[0].json.texto) {\n    return { historial_texto: \"No hay historial previo. Esta es la primera interacción.\" };\n}\n\n// Si hay datos, los formateamos como antes (Viejo -> Nuevo)\nconst historial = items.reverse().map(item => {\n    const rol = item.json.tipo === 'human' ? 'Usuario' : 'Alex';\n    return `${rol}: ${item.json.texto}`;\n}).join('\\n');\n\nreturn { historial_texto: historial };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        848
+      ],
+      "id": "d507ac98-ce70-43ba-964e-37d1619bc1ce",
+      "name": "Formatear Historial"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.n8n_chat_histories (session_id, message)\nVALUES (\n  '{{ $(\"Agrupar\").first().json.user_id[0] }}',\n  '{{ JSON.stringify({ \"type\": \"ai\", \"data\": { \"content\": $json.answer.replace(/\\*/g, \"\").replace(/[^\\p{L}\\p{N}\\p{P}\\p{Z}]/gu, \"\").trim() } }).replace(/'/g, \"''\") }}'::jsonb\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3568,
+        896
+      ],
+      "id": "6ec07b2f-d474-4b69-aa40-c5540b4df6e6",
+      "name": "Guardar Respuesta Limpia",
+      "credentials": {
+        "postgres": {
+          "id": "cvjjrdHCCKUMPcLp",
+          "name": "Demo WhatsApp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.n8n_chat_histories (session_id, message)\nVALUES (\n  '{{ $(\"Agrupar\").first().json.user_id[0] }}',\n  '{\"type\": \"human\", \"data\": {\"content\": \"{{ $(\"Agrupar\").first().json.message.join(\" \").replace(/'/g, \"''\") }}\"}}'::jsonb\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2752,
+        688
+      ],
+      "id": "fbbd51c3-959c-406f-8329-98527abe5574",
+      "name": "Guardar Mensaje Usuario",
+      "credentials": {
+        "postgres": {
+          "id": "cvjjrdHCCKUMPcLp",
+          "name": "Demo WhatsApp"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $(\"Agrupar\").first().json.message.join(\" \") }}",
+        "options": {
+          "systemMessage": "=# 1. IDENTIDAD Y SALUDO\nNombre: Alex, asistente senior de la inmobiliaria \"Demo\".\nPRIMER MENSAJE: Si el <chat_history> es \"primera interacción\", responde solo el saludo corporativo. No añadidas sugerencias.\n\n# 2. SISTEMA DE RAZONAMIENTO (CRÍTICO)\nAntes de responder, procesa en <thinking>:\n1. **Extracción y Comparación:** Si el usuario pide un superlativo (más grande, más barato, mejor), busca los 3 pisos anteriores, extrae sus valores numéricos (ej: 30m2, 42m2, 40m2) y compáralos. \n   *Ejemplo: \"Piso 1: 30m2 | Piso 2: 42m2 | Piso 3: 40m2. El mayor es el Piso 2 (Ref: T11296-4)\".*\n2. **Identificación de Referencia:** Define la Referencia de Interés basada en el análisis anterior.\n3. **Fase Actual:** [BÚSQUEDA], [DETALLE] o [REGISTRO].\n4. **Validación de Herramientas:** Si el usuario eligió uno o pidió el \"más X\", DEBO usar `obtener_detalle_piso`. No debo pedir datos personales aún.\n\n# 3. PROTOCOLO POR FASES\n\n## FASE 1: BÚSQUEDA Y SELECCIÓN\n- Presenta 3 opciones. \n- **Sincronización:** Llama a `enviar_foto_principal` una vez por CADA piso (si hay 3 resultados, haces 3 llamadas separadas a la herramienta).\n\n## FASE 2: FICHA TÉCNICA Y GALERÍA (EL FILTRO)\n- **Disparador:** El usuario elige un piso, pide \"el más grande\", \"más info\" o dice \"me interesa\".\n- **Acción 1:** Llama a `obtener_detalle_piso` para la referencia seleccionada.\n- **Acción 2:** Responde con la ficha técnica detallada (metros, distribución, estado).\n- **Acción 3 (OBLIGATORIA):** Pregunta: \"¿Te gustaría que te envíe la galería completa de fotos de este piso?\". \n- **PROHIBICIÓN:** No envíes fotos principales en esta fase, ya se enviaron antes. No pidas el Nombre/Email todavía.\n\n## FASE 3: CUALIFICACIÓN (REGISTRO)\n- **Disparador:** Solo después de que el usuario responda a la pregunta de la galería o diga \"quiero visitarlo/alquilarlo\".\n- **Secuencia:** Pide los 8 datos de uno en uno [Nombre -> Email -> ...].\n\n# 4. PROTOCOLO DE HERRAMIENTAS\n- `obtener_detalle_piso`: Úsala siempre que el usuario pida detalles o selecciones un piso específico.\n- `enviar_galeria_completa`: Úsala solo cuando el usuario diga que SÍ a la oferta de la galería.\n- `registrar_lead_calificado`: Úsala solo al final de los 8 datos.\n- `parallel_tool_calls`: DESACTIVADO.\n\n# 5. ESTRUCTURA DE SALIDA (BLINDAJE XML)\n<thinking> [Comparación: Piso A(X m2) vs Piso B(Y m2) | Referencia: XXXX | Fase: XXX | Siguiente paso: XXX] </thinking>\n\n<answer> \nRespuesta limpia para WhatsApp. Sin negritas ni asteriscos. \nSi Carlos pide el más grande: \"El piso más grande de los que hemos visto es el de Passatge Valeri Serra, con 42 m². Tiene estas características: [info técnica]. ¿Te gustaría que te envíe la galería completa de fotos?\"\n</answer>\n\n# 6. MEMORIA Y CONTEXTO\n<chat_history> {{ $(\"Formatear Historial\").first().json.historial_texto }} </chat_history>\nMENSAJE ACTUAL DEL USUARIO: {{ $(\"Agrupar\").first().json.message.join(\" \") }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2688,
+        992
+      ],
+      "id": "e520fd08-0613-461e-aa4f-dd069e7bcc96",
+      "name": "Alex IA - SH Inmobiliaria"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Envía la imagen destacada de un inmueble. Úsala siempre que menciones un piso por primera vez o cuando el usuario quiera ver la foto de portada. Solo requiere una URL.",
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance150155/messages/image",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "2jg28az7ui090fwk"
+            },
+            {
+              "name": "to",
+              "value": "={{ $(\"Agrupar\").first().json.user_id[0] }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $fromAI(\"caption\", \"Foto principal de [Nombre del Piso]\", \"string\") }}"
+            },
+            {
+              "name": "image",
+              "value": "={{ $fromAI(\"url_imagen\", \"URL directa (.jpg/.png). La URL que se encuentra en la columna Foto_Principal. PROHIBIDO usar la URL de la web del piso.\", \"string\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        3008,
+        1216
+      ],
+      "id": "2414537f-688e-4dd2-97f1-e477d02898bf",
+      "name": "enviar_foto_principal"
+    },
+    {
+      "parameters": {
+        "description": "Usa esta herramienta para enviar la galería de imágenes. DEBES enviar obligatoriamente: 1) 'urls_string' con el contenido de la celda Fotos_Galeria. 2) 'nombre_piso' con el título del inmueble. 3) 'whatsapp_id' con el ID del usuario del historial (ej: 34626382438@s.whatsapp.net). No agrupes los datos, envíalos en sus campos respectivos.",
+        "workflowId": {
+          "__rl": true,
+          "value": "fxw4elyGwuEE4wVB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/fxw4elyGwuEE4wVB",
+          "cachedResultName": "Real Estate Property Gallery WhatsApp Image Sender via UltraMsg"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "whatsapp_id": "={{ $(\"Agrupar\").first().json.user_id[0] }}",
+            "nombre_piso": "={{ $fromAI(\"nombre_piso\", \"El nombre o 'Titulo' del piso seleccionado.\", \"string\") }}",
+            "urls_string": "={{ $fromAI(\"urls_string\", \"El contenido íntegro de la columna 'Fotos_Galeria' del piso seleccionado. Pásalo tal cual, con todas sus comas.\", \"string\") }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "urls_string",
+              "displayName": "urls_string",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "nombre_piso",
+              "displayName": "nombre_piso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "whatsapp_id",
+              "displayName": "whatsapp_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3136,
+        1264
+      ],
+      "id": "2622c230-8a87-4f3b-b9b6-50116733f579",
+      "name": "enviar_galeria_completa"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "97eb15e5-e543-4bda-8710-b7bb073f6748",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        944
+      ],
+      "id": "b4c0163f-86e1-46d0-89d1-2d12b7fb5fbe",
+      "name": "Nuevo mensaje",
+      "webhookId": "97eb15e5-e543-4bda-8710-b7bb073f6748"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Agregar a mensajes en cola": {
+      "main": [
+        [
+          {
+            "node": "Esperar 5 segundos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener mensajes en cola": {
+      "main": [
+        [
+          {
+            "node": "Ordenar por ID de mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ordenar por ID de mensaje": {
+      "main": [
+        [
+          {
+            "node": "Código",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Código": {
+      "main": [
+        [
+          {
+            "node": "Verificar mensaje más reciente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar mensaje más reciente": {
+      "main": [
+        [
+          {
+            "node": "Eliminar mensajes en cola",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sin operación, no hacer nada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eliminar mensajes en cola": {
+      "main": [
+        [
+          {
+            "node": "Agrupar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar": {
+      "main": [
+        [
+          {
+            "node": "Obtener Historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "registrar_lead_calificado": {
+      "ai_tool": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar 5 segundos": {
+      "main": [
+        [
+          {
+            "node": "Obtener mensajes en cola",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cargar_catalogo": {
+      "ai_tool": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "obtener_detalle_piso": {
+      "ai_tool": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer and thinking split": {
+      "main": [
+        [
+          {
+            "node": "Corregir doble *",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar Respuesta Limpia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Corregir doble *": {
+      "main": [
+        [
+          {
+            "node": "Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Historial": {
+      "main": [
+        [
+          {
+            "node": "Formatear Historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Historial": {
+      "main": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar Mensaje Usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alex IA - SH Inmobiliaria": {
+      "main": [
+        [
+          {
+            "node": "Answer and thinking split",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "enviar_foto_principal": {
+      "ai_tool": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "enviar_galeria_completa": {
+      "ai_tool": [
+        [
+          {
+            "node": "Alex IA - SH Inmobiliaria",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nuevo mensaje": {
+      "main": [
+        [
+          {
+            "node": "Agregar a mensajes en cola",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "ea967c34-4419-4d8d-b370-ab8ad93e0bfe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "71397bf1728f5b19b1f2c940dbca72f1ff893445941643dc73d7b8410b8afd63"
+  },
+  "id": "aLtalBJ19nvX5KUT",
+  "tags": []
+}
